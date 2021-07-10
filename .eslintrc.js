@@ -10,5 +10,7 @@ module.exports = {
   },
   plugins: ['prettier'],
   ignorePatterns: ['dist/*'],
-  rules: {},
+  rules: {
+    'no-new': 0,
+  },
 }
