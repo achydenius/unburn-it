@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "sourceMap": true,
+    "strict": true,
+    "lib": [
+      "DOM",
+      "ES2015"
+    ],
+    "rootDir": "./src",
+    "outDir": "./dist"
+  },
+}

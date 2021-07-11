@@ -2,15 +2,15 @@ import {
   Scene,
   Engine,
   ArcRotateCamera,
-  Color3,
+  Color4,
   Vector3,
   HemisphericLight,
   MeshBuilder,
-} from 'babylonjs'
+} from '@babylonjs/core'
 
-const createScene = (engine, canvas) => {
+const createScene = (engine: Engine, canvas: HTMLCanvasElement) => {
   const scene = new Scene(engine)
-  scene.clearColor = Color3.Black
+  scene.clearColor = new Color4(0, 0, 0, 1.0)
 
   const camera = new ArcRotateCamera(
     'Camera',
@@ -30,7 +30,7 @@ const createScene = (engine, canvas) => {
 }
 
 window.addEventListener('load', () => {
-  const canvas = document.getElementById('canvas')
+  const canvas = document.getElementById('canvas') as HTMLCanvasElement
   const engine = new Engine(canvas, true)
   const scene = createScene(engine, canvas)
 
