@@ -5,8 +5,10 @@ import {
   Color4,
   Vector3,
   HemisphericLight,
-  MeshBuilder,
+  SceneLoader,
 } from '@babylonjs/core'
+import '@babylonjs/loaders'
+import sceneFile from './assets/scene.glb'
 
 const createScene = (engine: Engine, canvas: HTMLCanvasElement) => {
   const scene = new Scene(engine)
@@ -24,7 +26,9 @@ const createScene = (engine: Engine, canvas: HTMLCanvasElement) => {
 
   new HemisphericLight('Light', new Vector3(1, 1, 0), scene)
 
-  MeshBuilder.CreateBox('Box', {}, scene)
+  SceneLoader.Append('', sceneFile, scene, (s) => {
+    console.log(s)
+  })
 
   return scene
 }

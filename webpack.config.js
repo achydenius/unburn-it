@@ -8,14 +8,18 @@ module.exports = (env, argv) => ({
     path: path.resolve(__dirname, 'dist'),
   },
   resolve: {
-    extensions: ['.ts', '.js'],
+    extensions: ['.ts', '.js', '.glb', '.gltf'],
   },
   module: {
     rules: [
       {
-        test: /.ts$/,
+        test: /\.ts$/,
         use: 'ts-loader',
         exclude: /node_modules/,
+      },
+      {
+        test: /\.(glb|gltf)$/,
+        type: 'asset/resource',
       },
     ],
   },
