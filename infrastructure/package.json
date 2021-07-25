@@ -7,7 +7,8 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "cdk": "cdk"
+    "deploy:dev": "cdk deploy InfrastructureStack-dev",
+    "deploy:prod": "cdk deploy InfrastructureStack-prod"
   },
   "devDependencies": {
     "@aws-cdk/assert": "1.95.1",

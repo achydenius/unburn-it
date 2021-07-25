@@ -7,21 +7,31 @@ import * as targets from '@aws-cdk/aws-route53-targets'
 import * as cloudfront from '@aws-cdk/aws-cloudfront'
 import * as iam from '@aws-cdk/aws-iam'
 
-const domainName = 'unburn.it'
+export interface InfrastructureProps {
+  env: {
+    account: string
+    region: string
+  }
+  domainName: string
+  subdomain?: string
+  assetDirectory: string
+}
 
 export default class InfrastructureStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props)
+  constructor(scope: cdk.Construct, id: string, props: InfrastructureProps) {
+    super(scope, id, { env: props.env })
 
     const hostedZone = route53.HostedZone.fromLookup(this, 'HostedZone', {
-      domainName,
+      domainName: props.domainName,
     })
-    const domain = `www.${domainName}`
+    const domain = `${props.subdomain ? `${props.subdomain}.` : ''}${
+      props.domainName
+    }`
     const originAccessIdentity = new cloudfront.OriginAccessIdentity(
       this,
       'OriginAccessIdentity'
     )
-    new cdk.CfnOutput(this, 'SiteUrl', { value: `http://${domain}` })
+    new cdk.CfnOutput(this, 'SiteUrl', { value: `https://${domain}` })
 
     const bucket = new s3.Bucket(this, 'Bucket', {
       bucketName: domain,
@@ -99,7 +109,7 @@ export default class InfrastructureStack extends cdk.Stack {
     })
 
     new s3Deployment.BucketDeployment(this, 'DeployWithInvalidation', {
-      sources: [s3Deployment.Source.asset('../site')],
+      sources: [s3Deployment.Source.asset(props.assetDirectory)],
       destinationBucket: bucket,
       distribution,
       distributionPaths: ['/*'],
