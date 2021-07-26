@@ -9,6 +9,8 @@ An audiovisual art project.
 - lint code with `npm run lint`
 - create a production build with `npm run build`
 
+Babylon.js Inspector can be enabled by adding `inspector=true` query parameter to the url.
+
 ## Hosting & deployment
 
 The project is hosted as a static site in Amazon S3. Current CDK setup allows creating the required infrastructure and defines two environments: development and production.
