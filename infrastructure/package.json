@@ -1,0 +1,31 @@
+{
+  "name": "infrastructure",
+  "version": "0.1.0",
+  "bin": {
+    "infrastructure": "bin/infrastructure.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "deploy:dev": "cdk deploy InfrastructureStack-dev",
+    "deploy:prod": "cdk deploy InfrastructureStack-prod"
+  },
+  "devDependencies": {
+    "@aws-cdk/assert": "1.95.1",
+    "@types/node": "10.17.27",
+    "aws-cdk": "1.95.1",
+    "ts-node": "^9.0.0",
+    "typescript": "~3.9.7"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-certificatemanager": "^1.115.0",
+    "@aws-cdk/aws-cloudfront": "^1.115.0",
+    "@aws-cdk/aws-iam": "^1.115.0",
+    "@aws-cdk/aws-route53": "^1.115.0",
+    "@aws-cdk/aws-route53-targets": "^1.115.0",
+    "@aws-cdk/aws-s3": "^1.115.0",
+    "@aws-cdk/aws-s3-deployment": "^1.115.0",
+    "@aws-cdk/core": "1.95.1",
+    "source-map-support": "^0.5.16"
+  }
+}

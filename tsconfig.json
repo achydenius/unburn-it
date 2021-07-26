@@ -13,4 +13,5 @@
     "rootDir": "./src",
     "outDir": "./dist"
   },
+  "exclude": ["./infrastructure"]
 }
