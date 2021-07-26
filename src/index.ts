@@ -6,10 +6,12 @@ import {
   Vector3,
   HemisphericLight,
   SceneLoader,
+  MeshBuilder,
 } from '@babylonjs/core'
 import '@babylonjs/loaders'
 import '@babylonjs/inspector'
 import introScene from './assets/intro.glb'
+import createWaterMaterial from './water'
 
 const createScene = async (
   engine: Engine,
@@ -28,9 +30,28 @@ const createScene = async (
   )
   camera.attachControl(canvas, true)
 
-  new HemisphericLight('Light', new Vector3(1, 1, 0), scene)
+  new HemisphericLight('Light', new Vector3(0, 1, 0), scene)
 
-  return SceneLoader.AppendAsync('', introScene, scene)
+  await SceneLoader.AppendAsync('', introScene, scene)
+
+  const plane = MeshBuilder.CreateGround(
+    'Plane',
+    { width: 1000, height: 1000 },
+    scene
+  )
+  const waterMaterial = createWaterMaterial(
+    scene,
+    scene.meshes.filter((mesh) => mesh.id !== 'Plane')
+  )
+  plane.material = waterMaterial
+
+  let time = 0
+  scene.registerBeforeRender(() => {
+    time += engine.getDeltaTime() * 0.0005
+    waterMaterial.setFloat('time', time)
+  })
+
+  return scene
 }
 
 const inspectorRequested = (): boolean => {
