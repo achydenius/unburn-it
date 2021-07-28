@@ -13,6 +13,8 @@ import '@babylonjs/inspector'
 import introScene from './assets/intro.glb'
 import createWaterMaterial from './water'
 
+const maxBetaChange = 0.225
+
 const createScene = async (
   engine: Engine,
   canvas: HTMLCanvasElement
@@ -24,11 +26,14 @@ const createScene = async (
     'Camera',
     -Math.PI / 2,
     Math.PI / 2.5,
-    5,
+    20.0,
     new Vector3(0, 0, 0),
     scene
   )
   camera.attachControl(canvas, true)
+  camera.inputs.removeByType('ArcRotateCameraKeyboardMoveInput')
+  camera.inputs.removeByType('ArcRotateCameraMouseWheelInput')
+  const initialCameraBeta = camera.beta
 
   new HemisphericLight('Light', new Vector3(0, 1, 0), scene)
 
@@ -47,8 +52,23 @@ const createScene = async (
 
   let time = 0
   scene.registerBeforeRender(() => {
+    // Update water
     time += engine.getDeltaTime() * 0.0005
     waterMaterial.setFloat('time', time)
+
+    // Clamp camera beta
+    const maxBeta = initialCameraBeta + maxBetaChange
+    const minBeta = initialCameraBeta - maxBetaChange
+
+    if (camera.beta > maxBeta) {
+      camera.beta = maxBeta
+    }
+    if (camera.beta < minBeta) {
+      camera.beta = minBeta
+    }
+
+    // Lock camera target
+    camera.target.set(0, 0, 0)
   })
 
   return scene
