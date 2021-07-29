@@ -8,7 +8,7 @@ module.exports = (env, argv) => ({
     path: path.resolve(__dirname, 'dist'),
   },
   resolve: {
-    extensions: ['.ts', '.js', '.glb', '.gltf'],
+    extensions: ['.ts', '.js', '.glb', '.gltf', '.mp3'],
   },
   module: {
     rules: [
@@ -18,7 +18,7 @@ module.exports = (env, argv) => ({
         exclude: /node_modules/,
       },
       {
-        test: /\.(glb|gltf)$/,
+        test: /\.(glb|gltf|mp3)$/,
         type: 'asset/resource',
       },
     ],

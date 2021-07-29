@@ -10,14 +10,17 @@ import {
 } from '@babylonjs/core'
 import '@babylonjs/loaders'
 import '@babylonjs/inspector'
+import { Howl } from 'howler'
 import introScene from './assets/intro.glb'
 import createWaterMaterial from './water'
+import loadSounds from './sounds'
 
 const maxBetaChange = 0.225
 
 const createScene = async (
   engine: Engine,
-  canvas: HTMLCanvasElement
+  canvas: HTMLCanvasElement,
+  sounds: Howl[]
 ): Promise<Scene> => {
   const scene = new Scene(engine)
   scene.clearColor = new Color4(0, 0, 0, 1.0)
@@ -69,6 +72,13 @@ const createScene = async (
 
     // Lock camera target
     camera.target.set(0, 0, 0)
+
+    // Set sound volume
+    // TODO: Add a limit to update frequency in order to avoid distortion/cracking
+    const volume = (Math.sin(camera.alpha) + 1.0) * 0.5
+    if (volume !== sounds[0].volume()) {
+      sounds[0].volume(volume)
+    }
   })
 
   return scene
@@ -83,7 +93,12 @@ const inspectorRequested = (): boolean => {
 window.addEventListener('load', async () => {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement
   const engine = new Engine(canvas, true)
-  const scene = await createScene(engine, canvas)
+
+  const sounds = await loadSounds()
+  sounds[0].volume(0)
+  sounds[0].play()
+
+  const scene = await createScene(engine, canvas, sounds)
 
   if (inspectorRequested()) {
     scene.debugLayer.show()
