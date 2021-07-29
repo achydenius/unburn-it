@@ -17,6 +17,31 @@ import loadSounds from './sounds'
 
 const maxBetaChange = 0.225
 
+const mapRange = (
+  value: number,
+  inMin: number,
+  inMax: number,
+  outMin: number,
+  outMax: number
+): number => ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin
+
+// Map angle defined in radians between 0..1
+const mapRotation = (angle: number): number => {
+  const remainder = angle % (2 * Math.PI)
+  const wrapped = remainder < 0 ? 2 * Math.PI + remainder : remainder
+  return wrapped / (2 * Math.PI)
+}
+
+const getVolume = (phase: number, rampLength: number): number => {
+  if (phase < rampLength) {
+    return mapRange(phase, 0, rampLength, 1.0, 0)
+  }
+  if (phase >= 1.0 - rampLength) {
+    return mapRange(phase, 1.0 - rampLength, 1.0, 0, 1.0)
+  }
+  return 0
+}
+
 const createScene = async (
   engine: Engine,
   canvas: HTMLCanvasElement,
@@ -54,6 +79,7 @@ const createScene = async (
   plane.material = waterMaterial
 
   let time = 0
+  let lastRotation = -1
   scene.registerBeforeRender(() => {
     // Update water
     time += engine.getDeltaTime() * 0.0005
@@ -73,12 +99,22 @@ const createScene = async (
     // Lock camera target
     camera.target.set(0, 0, 0)
 
-    // Set sound volume
+    // Crossfade between sounds
     // TODO: Add a limit to update frequency in order to avoid distortion/cracking
-    const volume = (Math.sin(camera.alpha) + 1.0) * 0.5
-    if (volume !== sounds[0].volume()) {
-      sounds[0].volume(volume)
+    const soundRotationOffset = Math.PI / 2
+    const rotation = mapRotation(camera.alpha + soundRotationOffset)
+    if (rotation !== lastRotation) {
+      const volumes = [
+        getVolume(rotation, 0.25),
+        getVolume((rotation + 0.75) % 1.0, 0.25),
+        getVolume((rotation + 0.5) % 1.0, 0.25),
+        getVolume((rotation + 0.25) % 1.0, 0.25),
+      ]
+      sounds.forEach((sound, i) => {
+        sound.volume(volumes[i])
+      })
     }
+    lastRotation = rotation
   })
 
   return scene
@@ -95,8 +131,11 @@ window.addEventListener('load', async () => {
   const engine = new Engine(canvas, true)
 
   const sounds = await loadSounds()
-  sounds[0].volume(0)
-  sounds[0].play()
+  sounds.forEach((sound) => {
+    sound.volume(0)
+    sound.loop(true)
+    sound.play()
+  })
 
   const scene = await createScene(engine, canvas, sounds)
 
