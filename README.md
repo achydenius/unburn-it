@@ -4,23 +4,25 @@ An audiovisual art project.
 
 ## Development
 
-In _main_ directory:
-
-- install dependencies with `npm install`
-- start app in development mode with `npm start` (the development server responds at http://localhost:9000)
-- lint code with `npm run lint`
-- create a production build with `npm run build`
-
-Babylon.js Inspector can be enabled by adding `inspector=true` query parameter to the url.
-
-### Directory structure:
-
 ```
 unburn-it
 └─── infrastructure # CDK setup for defining the infrastructure
 └─── main           # Main project
 └─── placeholder    # Placeholder site
 ```
+
+### Main project
+
+- install dependencies with `npm install`
+- start app in development mode with `npm start` (the development server responds at http://localhost:9000)
+- lint code with `npm run lint`
+
+Babylon.js Inspector can be enabled by adding `inspector=true` query parameter to the url.
+
+### Placeholder site
+
+- install dependencies with `npm install`
+- start app in development mode with `npm start` (the development server responds at http://localhost:9000)
 
 ## Hosting & deployment
 

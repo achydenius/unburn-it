@@ -4,11 +4,18 @@
   "description": "",
   "private": true,
   "scripts": {
-    "deploy:dev": "cd ../infrastructure && npm run deploy:dev -- assets=../placeholder/page",
-    "deploy:prod": "cd ../infrastructure && npm run deploy:prod -- assets=../placeholder/page"
+    "start": "webpack serve --mode development",
+    "build": "webpack --mode production",
+    "deploy:dev": "npm run build && cd ../infrastructure && npm run deploy:dev -- assets=../placeholder/dist",
+    "deploy:prod": "npm run build && cd ../infrastructure && npm run deploy:prod -- assets=../placeholder/dist"
   },
   "author": "",
   "license": "ISC",
-  "devDependencies": {},
+  "devDependencies": {
+    "html-webpack-plugin": "^5.3.2",
+    "webpack": "^5.47.1",
+    "webpack-cli": "^4.7.2",
+    "webpack-dev-server": "^3.11.2"
+  },
   "dependencies": {}
 }
