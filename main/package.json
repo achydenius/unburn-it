@@ -9,8 +9,8 @@
     "lint": "npm run eslint && npm run test-compile",
     "eslint": "eslint --ext .ts .",
     "test-compile": "tsc --noemit",
-    "deploy:dev": "npm run build && cd infrastructure && npm run deploy:dev",
-    "deploy:prod": "cd infrastructure && npm run deploy:prod"
+    "deploy:dev": "npm run build && cd ../infrastructure && npm run deploy:dev",
+    "deploy:prod": "cd ../infrastructure && npm run deploy:prod"
   },
   "author": "",
   "license": "ISC",

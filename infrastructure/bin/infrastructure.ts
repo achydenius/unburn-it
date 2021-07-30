@@ -27,9 +27,9 @@ const app = new cdk.App()
 new InfrastructureStack(app, 'InfrastructureStack-dev', {
   ...config,
   subdomain: devSubdomain,
-  assetDirectory: '../dist',
+  assetDirectory: '../main/dist',
 })
 new InfrastructureStack(app, 'InfrastructureStack-prod', {
   ...config,
-  assetDirectory: '../placeholder-page',
+  assetDirectory: '../placeholder',
 })
