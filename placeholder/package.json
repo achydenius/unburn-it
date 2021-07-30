@@ -1,0 +1,14 @@
+{
+  "name": "unburn-it-placeholder",
+  "version": "0.0.1",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "deploy:dev": "cd ../infrastructure && npm run deploy:dev -- assets=../placeholder/page",
+    "deploy:prod": "cd ../infrastructure && npm run deploy:prod -- assets=../placeholder/page"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {},
+  "dependencies": {}
+}

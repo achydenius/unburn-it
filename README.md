@@ -32,9 +32,10 @@ The project is hosted as a static site in Amazon S3. Current CDK setup allows cr
 - [AWS CDK](https://aws.amazon.com/cdk/)
 - Registered domain in [Amazon Route 53](https://aws.amazon.com/route53/)
 - Initialize CDK in _infrastructure_ directory with `cdk bootstrap`
-- Set `DOMAIN_NAME` environment variable to match the registered domain
 
 ### Deployment:
 
-- Deploy to dev (https://dev.DOMAIN_NAME) with `npm run deploy:dev`
-- Deploy to prod (https://DOMAIN_NAME) with `npm run deploy:prod`
+NPM deployment scripts can be run in both _main_ and _placeholder_ directories.
+
+- Deploy to dev (https://dev.unburn.it) with `npm run deploy:dev`
+- Deploy to prod (https://unburn.it) with `npm run deploy:prod`
