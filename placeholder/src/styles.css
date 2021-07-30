@@ -1,0 +1,55 @@
+body, html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+body {
+  background-color: #000;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: rgba(189, 255, 8, 0.84);
+}
+
+.scroll-wrapper {
+  position: absolute;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.scroll-bottom {
+  bottom: 0px;
+}
+
+.scroll {
+  white-space: nowrap;
+  overflow: hidden;
+  display: inline-block;
+  margin: 1em 0;
+}
+
+.scroll-fast {
+  animation: scroll 20s linear infinite;
+}
+
+.scroll-slow {
+  animation: scroll 30s linear infinite;
+}
+
+.scroll p {
+  font-family: serif;
+  font-size: 4em;
+  display: inline-block;
+  margin: 0;
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(0)
+  }
+  to {
+    transform: translateX(-50%)
+  }
+}
