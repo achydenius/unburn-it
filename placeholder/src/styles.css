@@ -7,9 +7,6 @@ body, html {
 
 body {
   background-color: #000;
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-size: cover;
   color: rgba(189, 255, 8, 0.84);
   overflow: hidden;
 }
