@@ -11,6 +11,7 @@ body {
   background-repeat: no-repeat;
   background-size: cover;
   color: rgba(189, 255, 8, 0.84);
+  overflow: hidden;
 }
 
 .scroll-wrapper {
@@ -19,15 +20,19 @@ body {
   overflow: hidden;
 }
 
+.scroll-top {
+  margin-top: 2em;
+}
+
 .scroll-bottom {
-  bottom: 0px;
+  bottom: -2em;
+  margin-bottom: 1.25em;
 }
 
 .scroll {
   white-space: nowrap;
   overflow: hidden;
   display: inline-block;
-  margin: 1em 0;
 }
 
 .scroll-fast {
@@ -39,8 +44,8 @@ body {
 }
 
 .scroll p {
-  font-family: serif;
-  font-size: 4em;
+  font-family: Outward, serif;
+  font-size: 15em;
   display: inline-block;
   margin: 0;
 }
@@ -51,5 +56,15 @@ body {
   }
   to {
     transform: translateX(-50%)
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .scroll p {
+    font-size: 10em;
+  }
+
+  .scroll-top {
+    margin-top: 1em;
   }
 }
