@@ -3,6 +3,11 @@ import './styles.css'
 import BackgroundImage from './unburn1M-CVWingren-scaled.jpg'
 import DisplacementImage from './displacement.jpg'
 
+const displacementScale = 0.5
+const animationSpeed = 1.0
+const movementFriction = 0.9
+const movementScale = 0.05
+
 const app = new Application({
   view: document.getElementById('canvas'),
   width: document.documentElement.clientWidth,
@@ -19,7 +24,7 @@ const createBackgroundSprite = (texture) => {
 const createDisplacementSprite = (texture) => {
   const sprite = Sprite.from(texture)
   sprite.texture.baseTexture.wrapMode = WRAP_MODES.REPEAT
-  sprite.scale.set(0.25)
+  sprite.scale.set(displacementScale)
   return sprite
 }
 
@@ -37,6 +42,14 @@ const resize = (bgSprite) => {
   renderer.resize(width, height)
 }
 
+let previousMove = { x: 0, y: 0 }
+let velocity = { x: 0, y: 0 }
+const move = (x, y) => {
+  velocity.x += x - previousMove.x
+  velocity.y += y - previousMove.y
+  previousMove = { x, y }
+}
+
 const init = ({ background, displacement }) => {
   const bgSprite = createBackgroundSprite(background.texture)
   stage.addChild(bgSprite)
@@ -47,13 +60,25 @@ const init = ({ background, displacement }) => {
   const filter = new filters.DisplacementFilter(dispSprite)
   stage.filters = [filter]
 
-  let time = 0
   ticker.add(() => {
-    dispSprite.position.set(-time, time)
-    time++
+    dispSprite.position.x += velocity.x * movementScale - animationSpeed
+    dispSprite.position.y += velocity.y * movementScale + animationSpeed
+    velocity.x *= movementFriction
+    velocity.y *= movementFriction
   })
 
   window.addEventListener('resize', () => resize(bgSprite))
+
+  const canvas = document.getElementById('canvas')
+  canvas.addEventListener('mousemove', ({ clientX, clientY }) =>
+    move(clientX, clientY)
+  )
+  canvas.addEventListener('touchstart', ({ touches }) => {
+    previousMove = { x: touches[0].clientX, y: touches[0].clientY }
+  })
+  canvas.addEventListener('touchmove', ({ touches }) =>
+    move(touches[0].clientX, touches[0].clientY)
+  )
 
   resize(bgSprite)
 }
