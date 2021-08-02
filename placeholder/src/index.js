@@ -3,36 +3,41 @@ import './styles.css'
 import BackgroundImage from './unburn1M-CVWingren-scaled.jpg'
 import DisplacementImage from './displacement.jpg'
 
-const width = window.innerWidth
-const height = window.innerHeight
-const app = new Application({ width, height })
-const { stage, view, ticker } = app
+const app = new Application({
+  view: document.getElementById('canvas'),
+  width: document.documentElement.clientWidth,
+  height: document.documentElement.clientHeight,
+})
+const { stage, ticker, renderer } = app
 
 const createBackgroundSprite = (texture) => {
   const sprite = Sprite.from(texture)
-
-  const ratio = Math.max(
-    width / sprite.texture.width,
-    height / sprite.texture.height
-  )
-  sprite.position.set(width / 2, height / 2)
-  sprite.scale.set(ratio)
   sprite.anchor.set(0.5)
-
   return sprite
 }
 
 const createDisplacementSprite = (texture) => {
   const sprite = Sprite.from(texture)
   sprite.texture.baseTexture.wrapMode = WRAP_MODES.REPEAT
-  sprite.scale.x = 0.25
-  sprite.scale.y = 0.25
+  sprite.scale.set(0.25)
   return sprite
 }
 
-const loader = new Loader()
-loader.add('background', BackgroundImage).add('displacement', DisplacementImage)
-loader.load((_, { background, displacement }) => {
+const resize = (bgSprite) => {
+  const width = document.documentElement.clientWidth
+  const height = document.documentElement.clientHeight
+
+  const ratio = Math.max(
+    width / bgSprite.texture.width,
+    height / bgSprite.texture.height
+  )
+  bgSprite.scale.set(ratio)
+  bgSprite.position.set(width / 2, height / 2)
+
+  renderer.resize(width, height)
+}
+
+const init = ({ background, displacement }) => {
   const bgSprite = createBackgroundSprite(background.texture)
   stage.addChild(bgSprite)
 
@@ -40,14 +45,19 @@ loader.load((_, { background, displacement }) => {
   stage.addChild(dispSprite)
 
   const filter = new filters.DisplacementFilter(dispSprite)
+  stage.filters = [filter]
 
   let time = 0
   ticker.add(() => {
-    stage.filters = [filter]
-    dispSprite.x = -time
-    dispSprite.y = time
+    dispSprite.position.set(-time, time)
     time++
   })
 
-  document.body.appendChild(view)
-})
+  window.addEventListener('resize', () => resize(bgSprite))
+
+  resize(bgSprite)
+}
+
+const loader = new Loader()
+loader.add('background', BackgroundImage).add('displacement', DisplacementImage)
+loader.load((_, resources) => init(resources))

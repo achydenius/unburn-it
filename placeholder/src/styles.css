@@ -2,13 +2,22 @@ body, html {
   height: 100%;
   margin: 0;
   padding: 0;
-  position: relative;
 }
 
 body {
   background-color: #000;
   color: rgba(189, 255, 8, 0.84);
   overflow: hidden;
+}
+
+#canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.wrapper {
+  height: 100%;
 }
 
 .scroll-wrapper {
