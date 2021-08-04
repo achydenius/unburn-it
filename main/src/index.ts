@@ -7,13 +7,17 @@ import {
   HemisphericLight,
   SceneLoader,
   MeshBuilder,
+  ActionManager,
+  Color3,
+  InterpolateValueAction,
+  ExecuteCodeAction,
+  CombineAction,
 } from '@babylonjs/core'
 import '@babylonjs/loaders'
 import '@babylonjs/inspector'
-import { Howl } from 'howler'
-import introScene from './assets/intro.glb'
+import introScene from './assets/SCENE_UPDATE.28.7.glb'
 import createWaterMaterial from './water'
-import loadSounds from './sounds'
+import SoundLoader from './sounds'
 
 const maxBetaChange = 0.225
 
@@ -42,10 +46,68 @@ const getVolume = (phase: number, rampLength: number): number => {
   return 0
 }
 
+const initPlayButton = (scene: Scene, soundLoader: SoundLoader): void => {
+  const plane = scene.getMeshByID('Plane')
+  plane!.isPickable = false
+
+  const mesh = scene.getMeshByID('play_start_text')
+  if (!mesh) {
+    throw Error('play_start_text mesh not found!')
+  }
+
+  mesh.actionManager = new ActionManager(scene)
+
+  mesh.actionManager.registerAction(
+    new CombineAction(ActionManager.OnPointerOverTrigger, [
+      new InterpolateValueAction(
+        ActionManager.NothingTrigger,
+        mesh.material,
+        'emissiveColor',
+        new Color3(1.0, 1.0, 1.0),
+        250
+      ),
+      new ExecuteCodeAction(ActionManager.NothingTrigger, () => {
+        const hover = soundLoader.getSound('hover')
+        if (!hover.playing() || hover.volume() < 1.0) {
+          hover.stop()
+          hover.volume(1.0)
+          hover.play()
+        }
+      }),
+    ])
+  )
+
+  mesh.actionManager.registerAction(
+    new CombineAction(ActionManager.OnPointerOutTrigger, [
+      new InterpolateValueAction(
+        ActionManager.NothingTrigger,
+        mesh.material,
+        'emissiveColor',
+        new Color3(0, 0, 0),
+        250
+      ),
+      new ExecuteCodeAction(ActionManager.NothingTrigger, () => {
+        const hover = soundLoader.getSound('hover')
+        if (hover.playing()) {
+          hover.fade(1.0, 0, 250)
+        }
+      }),
+    ])
+  )
+
+  mesh.actionManager.registerAction(
+    new ExecuteCodeAction(ActionManager.OnPickTrigger, () => {
+      const click = soundLoader.getSound('click')
+      click.stop()
+      click.play()
+    })
+  )
+}
+
 const createScene = async (
   engine: Engine,
   canvas: HTMLCanvasElement,
-  sounds: Howl[]
+  soundLoader: SoundLoader
 ): Promise<Scene> => {
   const scene = new Scene(engine)
   scene.clearColor = new Color4(0, 0, 0, 1.0)
@@ -77,6 +139,8 @@ const createScene = async (
     scene.meshes.filter((mesh) => mesh.id !== 'Plane')
   )
   plane.material = waterMaterial
+
+  initPlayButton(scene, soundLoader)
 
   let time = 0
   let lastRotation = -1
@@ -110,7 +174,7 @@ const createScene = async (
         getVolume((rotation + 0.5) % 1.0, 0.25),
         getVolume((rotation + 0.25) % 1.0, 0.25),
       ]
-      sounds.forEach((sound, i) => {
+      soundLoader.getBackgroundSounds().forEach((sound, i) => {
         sound.volume(volumes[i])
       })
     }
@@ -126,18 +190,23 @@ const inspectorRequested = (): boolean => {
   return pair !== undefined && pair[0] === 'inspector' && pair[1] === 'true'
 }
 
-window.addEventListener('load', async () => {
-  const canvas = document.getElementById('canvas') as HTMLCanvasElement
-  const engine = new Engine(canvas, true)
-
-  const sounds = await loadSounds()
-  sounds.forEach((sound) => {
+const initBackgroundSounds = (soundLoader: SoundLoader): void => {
+  soundLoader.getBackgroundSounds().forEach((sound) => {
     sound.volume(0)
     sound.loop(true)
     sound.play()
   })
+}
 
-  const scene = await createScene(engine, canvas, sounds)
+window.addEventListener('load', async () => {
+  const canvas = document.getElementById('canvas') as HTMLCanvasElement
+  const engine = new Engine(canvas, true)
+
+  const soundLoader = new SoundLoader()
+  await soundLoader.load()
+  initBackgroundSounds(soundLoader)
+
+  const scene = await createScene(engine, canvas, soundLoader)
 
   if (inspectorRequested()) {
     scene.debugLayer.show()
