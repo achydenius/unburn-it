@@ -14,7 +14,7 @@ module.exports = (env, argv) => ({
   module: {
     rules: [
       {
-        test: /\.(jpg|woff|woff2)$/,
+        test: /\.(jpg|woff|woff2|ttf)$/,
         type: 'asset/resource',
       },
       {

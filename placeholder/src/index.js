@@ -1,7 +1,7 @@
 import { Application, Sprite, WRAP_MODES, filters, Loader } from 'pixi.js'
 import './styles.css'
-import BackgroundImage from './unburn1M-CVWingren-scaled.jpg'
-import DisplacementImage from './displacement.jpg'
+import BackgroundImage from './assets/unburn1M-CVWingren-scaled.jpg'
+import DisplacementImage from './assets/displacement.jpg'
 
 const displacementScale = 0.5
 const animationSpeed = 1.0
