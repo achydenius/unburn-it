@@ -1,6 +1,7 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const WebpackPwaManifest = require('webpack-pwa-manifest')
 
 module.exports = (env, argv) => ({
   entry: './src/index.js',
@@ -14,7 +15,7 @@ module.exports = (env, argv) => ({
   module: {
     rules: [
       {
-        test: /\.(jpg|woff|woff2|ttf)$/,
+        test: /\.(jpg|png|woff|woff2|ttf)$/,
         type: 'asset/resource',
       },
       {
@@ -27,8 +28,17 @@ module.exports = (env, argv) => ({
   plugins: [
     new HtmlWebpackPlugin({
       template: './src/index.html',
+      favicon: './src/assets/favicon.ico',
     }),
     new MiniCssExtractPlugin(),
+    new WebpackPwaManifest({
+      name: 'Unburn It',
+      publicPath: './',
+      icons: [
+        { src: path.resolve('./src/assets/icon-192.png'), sizes: '192x192' },
+        { src: path.resolve('./src/assets/icon-512.png'), sizes: '512x512' },
+      ],
+    }),
   ],
   devServer: {
     contentBase: path.join(__dirname, 'dist'),
