@@ -13,8 +13,8 @@ export interface InfrastructureProps {
     region: string
   }
   domainName: string
-  subdomain?: string
   assetDirectory: string
+  subdomain?: string
 }
 
 export default class InfrastructureStack extends cdk.Stack {

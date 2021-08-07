@@ -3,16 +3,20 @@ import 'source-map-support/register'
 import * as cdk from '@aws-cdk/core'
 import InfrastructureStack from '../lib/infrastructure-stack'
 
+const domainName = 'unburn.it'
 const devSubdomain = 'dev'
 
-if (
-  !process.env.CDK_DEFAULT_ACCOUNT ||
-  !process.env.CDK_DEFAULT_REGION ||
-  !process.env.DOMAIN_NAME
-) {
+const app = new cdk.App()
+const assetDirectory = app.node.tryGetContext('assets')
+
+if (!process.env.CDK_DEFAULT_ACCOUNT || !process.env.CDK_DEFAULT_REGION) {
   throw Error(
-    'CDK_DEFAULT_ACCOUNT, CDK_DEFAULT_REGION and DOMAIN_NAME need to be defined!'
+    'CDK_DEFAULT_ACCOUNT and CDK_DEFAULT_REGION env variables need to be defined!'
   )
+}
+
+if (!assetDirectory) {
+  throw Error('assets context variable needs to be defined!')
 }
 
 const config = {
@@ -20,16 +24,14 @@ const config = {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION,
   },
-  domainName: process.env.DOMAIN_NAME,
+  domainName,
+  assetDirectory,
 }
 
-const app = new cdk.App()
 new InfrastructureStack(app, 'InfrastructureStack-dev', {
   ...config,
   subdomain: devSubdomain,
-  assetDirectory: '../dist',
 })
 new InfrastructureStack(app, 'InfrastructureStack-prod', {
   ...config,
-  assetDirectory: '../placeholder-page',
 })

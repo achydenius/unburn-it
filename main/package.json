@@ -1,5 +1,5 @@
 {
-  "name": "unburn-it",
+  "name": "unburn-it-main",
   "version": "0.0.1",
   "description": "",
   "private": true,
@@ -9,8 +9,8 @@
     "lint": "npm run eslint && npm run test-compile",
     "eslint": "eslint --ext .ts .",
     "test-compile": "tsc --noemit",
-    "deploy:dev": "npm run build && cd infrastructure && npm run deploy:dev",
-    "deploy:prod": "cd infrastructure && npm run deploy:prod"
+    "deploy:dev": "npm run build && cd ../infrastructure && npm run deploy:dev -- assets=../main/dist",
+    "deploy:prod": "npm run build && cd ../infrastructure && npm run deploy:prod -- assets=../main/dist"
   },
   "author": "",
   "license": "ISC",

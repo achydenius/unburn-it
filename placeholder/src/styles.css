@@ -1,0 +1,159 @@
+body, html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+}
+
+body {
+  background-color: #000;
+  overflow: hidden;
+}
+
+#canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.wrapper {
+  height: 100%;
+}
+
+.scroll-wrapper {
+  position: absolute;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.scroll {
+  white-space: nowrap;
+  overflow: hidden;
+  display: inline-block;
+}
+
+/* Text properties */
+.scroll-text {
+  color: rgba(189, 255, 8, 0.85);
+  display: inline-block;
+  margin: 0;
+}
+
+.scroll-text a {
+  color: rgba(60, 0, 255, 0.85);
+  text-decoration: none;
+}
+
+.scroll-text-large {
+  font-family: Outward, serif;
+  font-size: 26rem;
+  font-weight: 400;
+}
+
+.scroll-text-small {
+  font-family: Oswald, serif;
+  font-size: 3rem;
+  font-weight: 700;
+}
+
+/* Scroll positioning */
+.scroll-top {
+  margin-top: 5rem;
+}
+
+.scroll-middle {
+  bottom: 1rem;
+}
+
+.scroll-bottom {
+  bottom: 0.75rem;
+}
+
+/* Scroll speed and direction */
+.scroll-fast {
+  animation: scroll 20s linear infinite;
+  transform: translateX(0)
+}
+
+.scroll-slow {
+  animation: scroll 30s linear infinite;
+  transform: translateX(0)
+}
+
+.scroll-slow-reverse {
+  animation: scroll-reverse 30s linear infinite;
+  transform: translateX(-50%)
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(0)
+  }
+  to {
+    transform: translateX(-50%)
+  }
+}
+
+@keyframes scroll-reverse {
+  from {
+    transform: translateX(-50%)
+  }
+  to {
+    transform: translateX(0)
+  }
+}
+
+/* Responsivity */
+@media screen and (max-height: 1024px) {
+  .scroll-text-large {
+    font-size: 20rem;
+  }
+
+  .scroll-text-small {
+    font-size: 2rem;
+  }
+
+  .scroll-top {
+    margin-top: 2.75rem;
+  }
+
+  .scroll-middle {
+    bottom: -0.5rem;
+  }
+
+  .scroll-bottom {
+    bottom: -0.1rem;
+  }
+}
+
+@media screen and (max-height: 812px) {
+  .scroll-text-large {
+    font-size: 15rem;
+  }
+
+  .scroll-text-small {
+    font-size: 1.5rem;
+  }
+
+  .scroll-top {
+    margin-top: 2rem;
+  }
+
+  .scroll-bottom {
+    bottom: -0.2rem;
+  }
+}
+
+@media screen and (max-height: 480px) {
+  .scroll-text-large {
+    font-size: 10rem;
+  }
+
+  .scroll-middle {
+    bottom: 0rem;
+  }
+
+  .scroll-bottom {
+    bottom: -0.4rem;
+  }
+}
