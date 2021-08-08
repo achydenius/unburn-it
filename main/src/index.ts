@@ -5,19 +5,21 @@ import {
   Color4,
   Vector3,
   HemisphericLight,
-  SceneLoader,
   MeshBuilder,
   ActionManager,
   Color3,
   InterpolateValueAction,
-  ExecuteCodeAction,
   CombineAction,
+  AssetsManager,
+  ShaderMaterial,
+  Sound,
+  PlaySoundAction,
+  StopSoundAction,
 } from '@babylonjs/core'
 import '@babylonjs/loaders'
 import '@babylonjs/inspector'
-import introScene from './assets/SCENE_UPDATE.28.7.glb'
 import createWaterMaterial from './water'
-import SoundLoader from './sounds'
+import loadAssets from './assets'
 
 const maxBetaChange = 0.225
 
@@ -46,7 +48,7 @@ const getVolume = (phase: number, rampLength: number): number => {
   return 0
 }
 
-const initPlayButton = (scene: Scene, soundLoader: SoundLoader): void => {
+const initPlayButton = (scene: Scene, hover: Sound, click: Sound): void => {
   const plane = scene.getMeshByID('Plane')
   plane!.isPickable = false
 
@@ -66,14 +68,7 @@ const initPlayButton = (scene: Scene, soundLoader: SoundLoader): void => {
         new Color3(1.0, 1.0, 1.0),
         250
       ),
-      new ExecuteCodeAction(ActionManager.NothingTrigger, () => {
-        const hover = soundLoader.getSound('hover')
-        if (!hover.playing() || hover.volume() < 1.0) {
-          hover.stop()
-          hover.volume(1.0)
-          hover.play()
-        }
-      }),
+      new PlaySoundAction(ActionManager.NothingTrigger, hover),
     ])
   )
 
@@ -86,32 +81,19 @@ const initPlayButton = (scene: Scene, soundLoader: SoundLoader): void => {
         new Color3(0, 0, 0),
         250
       ),
-      new ExecuteCodeAction(ActionManager.NothingTrigger, () => {
-        const hover = soundLoader.getSound('hover')
-        if (hover.playing()) {
-          hover.fade(1.0, 0, 250)
-        }
-      }),
+      new StopSoundAction(ActionManager.NothingTrigger, hover),
     ])
   )
 
   mesh.actionManager.registerAction(
-    new ExecuteCodeAction(ActionManager.OnPickTrigger, () => {
-      const click = soundLoader.getSound('click')
-      click.stop()
-      click.play()
-    })
+    new PlaySoundAction(ActionManager.OnPickTrigger, click)
   )
 }
 
-const createScene = async (
-  engine: Engine,
-  canvas: HTMLCanvasElement,
-  soundLoader: SoundLoader
-): Promise<Scene> => {
-  const scene = new Scene(engine)
-  scene.clearColor = new Color4(0, 0, 0, 1.0)
-
+const createCamera = (
+  scene: Scene,
+  canvas: HTMLCanvasElement
+): ArcRotateCamera => {
   const camera = new ArcRotateCamera(
     'Camera',
     -Math.PI / 2,
@@ -123,12 +105,11 @@ const createScene = async (
   camera.attachControl(canvas, true)
   camera.inputs.removeByType('ArcRotateCameraKeyboardMoveInput')
   camera.inputs.removeByType('ArcRotateCameraMouseWheelInput')
-  const initialCameraBeta = camera.beta
 
-  new HemisphericLight('Light', new Vector3(0, 1, 0), scene)
+  return camera
+}
 
-  await SceneLoader.AppendAsync('', introScene, scene)
-
+const createWater = (scene: Scene): ShaderMaterial => {
   const plane = MeshBuilder.CreateGround(
     'Plane',
     { width: 1000, height: 1000 },
@@ -140,14 +121,23 @@ const createScene = async (
   )
   plane.material = waterMaterial
 
-  initPlayButton(scene, soundLoader)
+  return waterMaterial
+}
 
-  let time = 0
-  let lastRotation = -1
-  scene.registerBeforeRender(() => {
+let time = 0
+let lastRotation = -1
+const createBeforeRender =
+  (
+    engine: Engine,
+    camera: ArcRotateCamera,
+    water: ShaderMaterial,
+    initialCameraBeta: number,
+    backgroundSounds: Sound[]
+  ) =>
+  (): void => {
     // Update water
     time += engine.getDeltaTime() * 0.0005
-    waterMaterial.setFloat('time', time)
+    water.setFloat('time', time)
 
     // Clamp camera beta
     const maxBeta = initialCameraBeta + maxBetaChange
@@ -165,6 +155,7 @@ const createScene = async (
 
     // Crossfade between sounds
     // TODO: Add a limit to update frequency in order to avoid distortion/cracking
+    // TODO: Use positional sound instead?
     const soundRotationOffset = Math.PI / 2
     const rotation = mapRotation(camera.alpha + soundRotationOffset)
     if (rotation !== lastRotation) {
@@ -174,14 +165,47 @@ const createScene = async (
         getVolume((rotation + 0.5) % 1.0, 0.25),
         getVolume((rotation + 0.25) % 1.0, 0.25),
       ]
-      soundLoader.getBackgroundSounds().forEach((sound, i) => {
-        sound.volume(volumes[i])
+      backgroundSounds.forEach((sound, i) => {
+        sound.setVolume(volumes[i])
       })
     }
     lastRotation = rotation
-  })
+  }
 
-  return scene
+const initBackgroundSounds = (sounds: Sound[]): void => {
+  sounds.forEach((sound) => {
+    sound.setVolume(0)
+    sound.loop = true
+    sound.play()
+  })
+}
+
+const initScene = (scene: Scene, sounds: Sound[]): void => {
+  scene.clearColor = new Color4(0, 0, 0, 1.0)
+
+  const camera = createCamera(scene, scene.getEngine().getRenderingCanvas()!)
+  new HemisphericLight('Light', new Vector3(0, 1.0, 0), scene)
+  const waterMaterial = createWater(scene)
+
+  const backgroundSounds = sounds.filter(({ name }) =>
+    ['center', 'left', 'right', 'back'].includes(name)
+  )
+  initBackgroundSounds(backgroundSounds)
+  initPlayButton(
+    scene,
+    sounds.filter(({ name }) => name === 'hover')[0],
+    sounds.filter(({ name }) => name === 'click')[0]
+  )
+
+  scene.registerBeforeRender(
+    createBeforeRender(
+      scene.getEngine(),
+      camera,
+      waterMaterial,
+      camera.beta,
+      backgroundSounds
+    )
+  )
 }
 
 const inspectorRequested = (): boolean => {
@@ -190,23 +214,14 @@ const inspectorRequested = (): boolean => {
   return pair !== undefined && pair[0] === 'inspector' && pair[1] === 'true'
 }
 
-const initBackgroundSounds = (soundLoader: SoundLoader): void => {
-  soundLoader.getBackgroundSounds().forEach((sound) => {
-    sound.volume(0)
-    sound.loop(true)
-    sound.play()
-  })
-}
-
 window.addEventListener('load', async () => {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement
   const engine = new Engine(canvas, true)
+  const scene = new Scene(engine)
+  const manager = new AssetsManager(scene)
 
-  const soundLoader = new SoundLoader()
-  await soundLoader.load()
-  initBackgroundSounds(soundLoader)
-
-  const scene = await createScene(engine, canvas, soundLoader)
+  const sounds = await loadAssets(manager, scene)
+  initScene(scene, sounds)
 
   if (inspectorRequested()) {
     scene.debugLayer.show()

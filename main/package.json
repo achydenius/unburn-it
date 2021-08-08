@@ -15,7 +15,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/howler": "^2.2.3",
     "@typescript-eslint/eslint-plugin": "^4.28.2",
     "@typescript-eslint/parser": "^4.28.2",
     "eslint": "^7.30.0",
@@ -34,7 +33,6 @@
   "dependencies": {
     "@babylonjs/core": "^4.2.0",
     "@babylonjs/inspector": "^4.2.0",
-    "@babylonjs/loaders": "^4.2.0",
-    "howler": "^2.2.3"
+    "@babylonjs/loaders": "^4.2.0"
   }
 }

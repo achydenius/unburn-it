@@ -14,5 +14,6 @@ module.exports = {
     'no-new': 0,
     'import/extensions': 0,
     '@typescript-eslint/explicit-function-return-type': 1,
+    'no-param-reassign': 1,
   },
 }
