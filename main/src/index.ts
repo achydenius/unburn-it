@@ -15,6 +15,7 @@ import {
   Sound,
   PlaySoundAction,
   StopSoundAction,
+  ExecuteCodeAction,
 } from '@babylonjs/core'
 import '@babylonjs/loaders'
 import '@babylonjs/inspector'
@@ -48,7 +49,8 @@ const getVolume = (phase: number, rampLength: number): number => {
   return 0
 }
 
-const initPlayButton = (scene: Scene, hover: Sound, click: Sound): void => {
+let clickIndex = -1
+const initPlayButton = (scene: Scene, hover: Sound, clicks: Sound[]): void => {
   const plane = scene.getMeshByID('Plane')
   plane!.isPickable = false
 
@@ -86,7 +88,13 @@ const initPlayButton = (scene: Scene, hover: Sound, click: Sound): void => {
   )
 
   mesh.actionManager.registerAction(
-    new PlaySoundAction(ActionManager.OnPickTrigger, click)
+    new ExecuteCodeAction(ActionManager.OnPickTrigger, () => {
+      if (clickIndex >= 0) {
+        clicks[clickIndex].stop()
+      }
+      clickIndex = (clickIndex + 1) % clicks.length
+      clicks[clickIndex].play()
+    })
   )
 }
 
@@ -194,7 +202,7 @@ const initScene = (scene: Scene, sounds: Sound[]): void => {
   initPlayButton(
     scene,
     sounds.filter(({ name }) => name === 'hover')[0],
-    sounds.filter(({ name }) => name === 'click')[0]
+    sounds.filter(({ name }) => name.startsWith('click'))
   )
 
   scene.registerBeforeRender(

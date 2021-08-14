@@ -1,13 +1,28 @@
 import { AssetsManager, Scene, Sound } from '@babylonjs/core'
-import introScene from './assets/SCENE_UPDATE.28.7.glb'
+import introScene from './assets/SCENE_1.COMPRESSED_TEXTURES.10.8.2021.glb'
 import center from './assets/1(CENTER)_ENTRY_26.07.21.mp3'
 import left from './assets/2(LEFT)_ENTRY_26.07.21.mp3'
 import right from './assets/3(RIGHT)_ENTRY_26.07.21.mp3'
 import back from './assets/4(BACK)_ENTRY_26.07.21.mp3'
 import hover from './assets/PLAY_HOVER.mp3'
-import click from './assets/PLAY_CLICK.mp3'
+import click1 from './assets/PLAY_CLICK1.mp3'
+import click2 from './assets/PLAY_CLICK2.mp3'
+import click3 from './assets/PLAY_CLICK3.mp3'
+import click4 from './assets/PLAY_CLICK4.mp3'
+import click5 from './assets/PLAY_CLICK5.mp3'
 
-const soundSources = { center, left, right, back, hover, click }
+const soundSources = {
+  center,
+  left,
+  right,
+  back,
+  hover,
+  click1,
+  click2,
+  click3,
+  click4,
+  click5,
+}
 
 const matchExtension = /\.[0-9a-z]+$/i
 
