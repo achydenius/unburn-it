@@ -113,6 +113,7 @@ export default class InfrastructureStack extends cdk.Stack {
       destinationBucket: bucket,
       distribution,
       distributionPaths: ['/*'],
+      memoryLimit: 512,
     })
   }
 }
