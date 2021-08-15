@@ -11,17 +11,27 @@ import click3 from './assets/PLAY_CLICK3.mp3'
 import click4 from './assets/PLAY_CLICK4.mp3'
 import click5 from './assets/PLAY_CLICK5.mp3'
 
-const soundSources = {
-  center,
-  left,
-  right,
-  back,
-  hover,
-  click1,
-  click2,
-  click3,
-  click4,
-  click5,
+type SceneAssets = {
+  name: string
+  scene: string
+  sounds: { [name: string]: string }
+}
+
+const introAssets = {
+  name: 'intro',
+  scene: introScene,
+  sounds: {
+    center,
+    left,
+    right,
+    back,
+    hover,
+    click1,
+    click2,
+    click3,
+    click4,
+    click5,
+  },
 }
 
 const matchExtension = /\.[0-9a-z]+$/i
@@ -56,15 +66,23 @@ const loadAsset = async (
   })
 
 // Load all assets and return sounds as these can't be accessed via scene
-export default async function loadAssets(
+const loadAssets = async (
+  assets: SceneAssets,
   manager: AssetsManager,
   scene: Scene
-): Promise<Sound[]> {
-  const sounds = Object.entries(soundSources).map(([name, src]) =>
+): Promise<Sound[]> => {
+  const sounds = Object.entries(assets.sounds).map(([name, src]) =>
     loadAsset(name, src, scene, manager)
   )
-  const mesh = loadAsset('introScene', introScene, scene, manager)
+  const mesh = loadAsset(assets.name, assets.scene, scene, manager)
   manager.load()
 
   return (await Promise.all([...sounds, mesh])).filter(isSound)
+}
+
+export default function loadIntroAssets(
+  manager: AssetsManager,
+  scene: Scene
+): Promise<Sound[]> {
+  return loadAssets(introAssets, manager, scene)
 }

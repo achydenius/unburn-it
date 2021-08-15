@@ -15,5 +15,6 @@ module.exports = {
     'import/extensions': 0,
     '@typescript-eslint/explicit-function-return-type': 1,
     'no-param-reassign': 1,
+    '@typescript-eslint/no-non-null-assertion': 1,
   },
 }
