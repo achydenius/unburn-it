@@ -91,6 +91,7 @@ export default function init(scene: Scene, sounds: Sound[]): void {
   createCamera(
     20.0,
     new Vector3(0, 0, 0),
+    Math.PI / 2.5,
     positionalSounds,
     scene,
     scene.getEngine().getRenderingCanvas()!

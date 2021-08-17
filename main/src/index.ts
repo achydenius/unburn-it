@@ -1,8 +1,8 @@
 import { Engine, Scene, AssetsManager } from '@babylonjs/core'
 import '@babylonjs/loaders'
 import '@babylonjs/inspector'
-import loadIntroAssets from './assets'
-import init from './intro'
+import { loadMainAssets } from './assets'
+import init from './main'
 
 const inspectorRequested = (): boolean => {
   const param = window.location.search.split('?')[1] as string | undefined
@@ -16,7 +16,7 @@ window.addEventListener('load', async () => {
   const scene = new Scene(engine)
   const manager = new AssetsManager(scene)
 
-  const sounds = await loadIntroAssets(manager, scene)
+  const sounds = await loadMainAssets(manager, scene)
   init(scene, sounds)
 
   if (inspectorRequested()) {

@@ -78,6 +78,7 @@ const crossfadeSounds = (camera: ArcRotateCamera, sounds: Sound[]): void => {
 export default function createCamera(
   radius: number,
   target: Vector3,
+  beta: number,
   positionalSounds: Sound[],
   scene: Scene,
   canvas: HTMLCanvasElement
@@ -85,7 +86,7 @@ export default function createCamera(
   const camera = new ArcRotateCamera(
     'Camera',
     -Math.PI / 2,
-    Math.PI / 2.5,
+    beta,
     radius,
     target,
     scene
