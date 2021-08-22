@@ -22,8 +22,10 @@ type SceneAssets = {
   sounds: { [name: string]: string }
 }
 
-// eslint-disable-next-line
-type SceneLoader = (manager: AssetsManager, scene: Scene) => Promise<Sound[]>
+export type SceneLoader = (
+  manager: AssetsManager,
+  scene: Scene
+) => Promise<Sound[]>
 
 const introAssets = {
   name: 'intro',
@@ -62,6 +64,7 @@ const isSoundFile = (src: string): boolean => {
 
 const isSound = (asset: Sound | void): asset is Sound => !!asset
 
+// TODO: Can some of this be simplified with onFinish or onTasksDoneObservable?
 const loadAsset = async (
   name: string,
   src: string,
