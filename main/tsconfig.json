@@ -12,7 +12,8 @@
     ],
     "rootDir": "./src",
     "outDir": "./dist",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noUnusedLocals": true,
   },
   "exclude": ["./infrastructure"]
 }

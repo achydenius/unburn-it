@@ -1,27 +1,9 @@
 import { AssetsManager, Scene, Sound } from '@babylonjs/core'
-import introScene from './assets/SCENE_1.COMPRESSED_TEXTURES.10.8.2021.glb'
-import center from './assets/1(CENTER)_ENTRY_26.07.21.mp3'
-import left from './assets/2(LEFT)_ENTRY_26.07.21.mp3'
-import right from './assets/3(RIGHT)_ENTRY_26.07.21.mp3'
-import back from './assets/4(BACK)_ENTRY_26.07.21.mp3'
-import hover from './assets/PLAY_HOVER.mp3'
-import click1 from './assets/PLAY_CLICK1.mp3'
-import click2 from './assets/PLAY_CLICK2.mp3'
-import click3 from './assets/PLAY_CLICK3.mp3'
-import click4 from './assets/PLAY_CLICK4.mp3'
-import click5 from './assets/PLAY_CLICK5.mp3'
 
-const soundSources = {
-  center,
-  left,
-  right,
-  back,
-  hover,
-  click1,
-  click2,
-  click3,
-  click4,
-  click5,
+export type AssetConfig = {
+  name: string
+  scene: string
+  sounds: { [name: string]: string }
 }
 
 const matchExtension = /\.[0-9a-z]+$/i
@@ -33,6 +15,7 @@ const isSoundFile = (src: string): boolean => {
 
 const isSound = (asset: Sound | void): asset is Sound => !!asset
 
+// TODO: Can some of this be simplified with onFinish or onTasksDoneObservable?
 const loadAsset = async (
   name: string,
   src: string,
@@ -56,14 +39,15 @@ const loadAsset = async (
   })
 
 // Load all assets and return sounds as these can't be accessed via scene
-export default async function loadAssets(
+export async function loadAssets(
+  config: AssetConfig,
   manager: AssetsManager,
   scene: Scene
 ): Promise<Sound[]> {
-  const sounds = Object.entries(soundSources).map(([name, src]) =>
+  const sounds = Object.entries(config.sounds).map(([name, src]) =>
     loadAsset(name, src, scene, manager)
   )
-  const mesh = loadAsset('introScene', introScene, scene, manager)
+  const mesh = loadAsset(config.name, config.scene, scene, manager)
   manager.load()
 
   return (await Promise.all([...sounds, mesh])).filter(isSound)
