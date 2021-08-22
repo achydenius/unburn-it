@@ -1,136 +1,156 @@
 import {
-  Scene,
-  Color4,
-  Vector3,
-  HemisphericLight,
-  MeshBuilder,
   ActionManager,
   Color3,
-  InterpolateValueAction,
   CombineAction,
+  ExecuteCodeAction,
+  HemisphericLight,
+  InterpolateValueAction,
+  MeshBuilder,
+  PlaySoundAction,
   ShaderMaterial,
   Sound,
-  PlaySoundAction,
   StopSoundAction,
-  ExecuteCodeAction,
+  Vector3,
 } from '@babylonjs/core'
+import introScene from './assets/SCENE_1.COMPRESSED_TEXTURES.10.8.2021.glb'
+import center from './assets/1(CENTER)_ENTRY_26.07.21.mp3'
+import left from './assets/2(LEFT)_ENTRY_26.07.21.mp3'
+import right from './assets/3(RIGHT)_ENTRY_26.07.21.mp3'
+import back from './assets/4(BACK)_ENTRY_26.07.21.mp3'
+import hover from './assets/PLAY_HOVER.mp3'
+import click1 from './assets/PLAY_CLICK1.mp3'
+import click2 from './assets/PLAY_CLICK2.mp3'
+import click3 from './assets/PLAY_CLICK3.mp3'
+import click4 from './assets/PLAY_CLICK4.mp3'
+import click5 from './assets/PLAY_CLICK5.mp3'
+import Level from './level'
 import createCamera from './camera'
 import createWaterMaterial from './water'
 
-const getHoverSound = (sounds: Sound[]): Sound =>
-  sounds.find(({ name }) => name === 'hover')!
+const config = {
+  name: 'intro',
+  scene: introScene,
+  sounds: {
+    center,
+    left,
+    right,
+    back,
+    hover,
+    click1,
+    click2,
+    click3,
+    click4,
+    click5,
+  },
+}
 
-const getClickSounds = (sounds: Sound[]): Sound[] =>
-  sounds.filter(({ name }) => name.startsWith('click'))
+export default class IntroLevel extends Level {
+  config = config
 
-const getPositionalSounds = (sounds: Sound[]): Sound[] =>
-  sounds.filter(({ name }) =>
-    ['center', 'left', 'right', 'back'].includes(name)
-  )
+  positionalSoundNames = ['center', 'left', 'right', 'back']
 
-let clickIndex = -1
-const initPlayButton = (
-  scene: Scene,
-  sounds: Sound[],
-  onClick: () => void
-): void => {
-  const plane = scene.getMeshByID('Plane')
-  plane!.isPickable = false
+  init(onClick: () => void): void {
+    createCamera(
+      20.0,
+      new Vector3(0, 0, 0),
+      Math.PI / 2.5,
+      this.getPositionalSounds(),
+      this.scene,
+      this.scene.getEngine().getRenderingCanvas()!
+    )
+    new HemisphericLight('Light', new Vector3(0, 1.0, 0), this.scene)
+    const waterMaterial = this.createWater()
 
-  const mesh = scene.getMeshByID('play_start_text')
-  if (!mesh) {
-    throw Error('play_start_text mesh not found!')
+    this.initPlayButton(onClick)
+
+    let time = 0
+    this.scene.registerBeforeRender(() => {
+      // Update water
+      time += this.scene.getEngine().getDeltaTime() * 0.0005
+      waterMaterial.setFloat('time', time)
+    })
   }
 
-  const hoverSound = getHoverSound(sounds)
-  const clickSounds = getClickSounds(sounds)
-  const positionalSounds = getPositionalSounds(sounds)
+  private getHoverSound(): Sound {
+    return this.sounds!.find(({ name }) => name === 'hover')!
+  }
 
-  mesh.actionManager = new ActionManager(scene)
+  private getClickSounds(): Sound[] {
+    return this.sounds!.filter(({ name }) => name.startsWith('click'))
+  }
 
-  mesh.actionManager.registerAction(
-    new CombineAction(ActionManager.OnPointerOverTrigger, [
-      new InterpolateValueAction(
-        ActionManager.NothingTrigger,
-        mesh.material,
-        'emissiveColor',
-        new Color3(1.0, 1.0, 1.0),
-        250
-      ),
-      new PlaySoundAction(ActionManager.NothingTrigger, hoverSound),
-    ])
-  )
+  private createWater(): ShaderMaterial {
+    const plane = MeshBuilder.CreateGround(
+      'Plane',
+      { width: 1000, height: 1000 },
+      this.scene
+    )
+    const waterMaterial = createWaterMaterial(
+      this.scene,
+      this.scene.meshes.filter((mesh) => mesh.id !== 'Plane')
+    )
+    plane.material = waterMaterial
 
-  mesh.actionManager.registerAction(
-    new CombineAction(ActionManager.OnPointerOutTrigger, [
-      new InterpolateValueAction(
-        ActionManager.NothingTrigger,
-        mesh.material,
-        'emissiveColor',
-        new Color3(0, 0, 0),
-        250
-      ),
-      new StopSoundAction(ActionManager.NothingTrigger, hoverSound),
-    ])
-  )
+    return waterMaterial
+  }
 
-  mesh.actionManager.registerAction(
-    new ExecuteCodeAction(ActionManager.OnPickTrigger, () => {
-      if (clickIndex >= 0) {
-        clickSounds[clickIndex].stop()
-      }
-      clickIndex = (clickIndex + 1) % clickSounds.length
-      clickSounds[clickIndex].play()
+  private initPlayButton(onClick: () => void): void {
+    const plane = this.scene.getMeshByID('Plane')
+    plane!.isPickable = false
 
-      hoverSound.stop()
-      positionalSounds.forEach((sound) => sound.stop())
-      mesh.actionManager!.actions.forEach((action) =>
-        mesh.actionManager!.unregisterAction(action)
-      )
-      onClick()
-    })
-  )
-}
+    const mesh = this.scene.getMeshByID('play_start_text')
+    if (!mesh) {
+      throw Error('play_start_text mesh not found!')
+    }
 
-const createWater = (scene: Scene): ShaderMaterial => {
-  const plane = MeshBuilder.CreateGround(
-    'Plane',
-    { width: 1000, height: 1000 },
-    scene
-  )
-  const waterMaterial = createWaterMaterial(
-    scene,
-    scene.meshes.filter((mesh) => mesh.id !== 'Plane')
-  )
-  plane.material = waterMaterial
+    const hoverSound = this.getHoverSound()
+    const clickSounds = this.getClickSounds()
+    const positionalSounds = this.getPositionalSounds()
 
-  return waterMaterial
-}
+    mesh.actionManager = new ActionManager(this.scene)
 
-export default function createScene(
-  scene: Scene,
-  sounds: Sound[],
-  onClick: () => void
-): void {
-  scene.clearColor = new Color4(0, 0, 0, 1.0)
+    mesh.actionManager.registerAction(
+      new CombineAction(ActionManager.OnPointerOverTrigger, [
+        new InterpolateValueAction(
+          ActionManager.NothingTrigger,
+          mesh.material,
+          'emissiveColor',
+          new Color3(1.0, 1.0, 1.0),
+          250
+        ),
+        new PlaySoundAction(ActionManager.NothingTrigger, hoverSound),
+      ])
+    )
 
-  createCamera(
-    20.0,
-    new Vector3(0, 0, 0),
-    Math.PI / 2.5,
-    getPositionalSounds(sounds),
-    scene,
-    scene.getEngine().getRenderingCanvas()!
-  )
-  new HemisphericLight('Light', new Vector3(0, 1.0, 0), scene)
-  const waterMaterial = createWater(scene)
+    mesh.actionManager.registerAction(
+      new CombineAction(ActionManager.OnPointerOutTrigger, [
+        new InterpolateValueAction(
+          ActionManager.NothingTrigger,
+          mesh.material,
+          'emissiveColor',
+          new Color3(0, 0, 0),
+          250
+        ),
+        new StopSoundAction(ActionManager.NothingTrigger, hoverSound),
+      ])
+    )
 
-  initPlayButton(scene, sounds, onClick)
+    let clickIndex = 0
+    mesh.actionManager.registerAction(
+      new ExecuteCodeAction(ActionManager.OnPickTrigger, () => {
+        if (clickIndex >= 0) {
+          clickSounds[clickIndex].stop()
+        }
+        clickIndex = (clickIndex + 1) % clickSounds.length
+        clickSounds[clickIndex].play()
 
-  let time = 0
-  scene.registerBeforeRender(() => {
-    // Update water
-    time += scene.getEngine().getDeltaTime() * 0.0005
-    waterMaterial.setFloat('time', time)
-  })
+        hoverSound.stop()
+        positionalSounds.forEach((sound) => sound.stop())
+        mesh.actionManager!.actions.forEach((action) =>
+          mesh.actionManager!.unregisterAction(action)
+        )
+        onClick()
+      })
+    )
+  }
 }
