@@ -2,6 +2,7 @@ import {
   ActionManager,
   Color3,
   CombineAction,
+  Engine,
   ExecuteCodeAction,
   HemisphericLight,
   InterpolateValueAction,
@@ -49,7 +50,14 @@ export default class IntroLevel extends Level {
 
   positionalSoundNames = ['center', 'left', 'right', 'back']
 
-  init(onClick: () => void): void {
+  onClick: () => void
+
+  constructor(engine: Engine, onClick: () => void) {
+    super(engine)
+    this.onClick = onClick
+  }
+
+  init(): void {
     createCamera(
       20.0,
       new Vector3(0, 0, 0),
@@ -61,7 +69,7 @@ export default class IntroLevel extends Level {
     new HemisphericLight('Light', new Vector3(0, 1.0, 0), this.scene)
     const waterMaterial = this.createWater()
 
-    this.initPlayButton(onClick)
+    this.initPlayButton(this.onClick)
 
     let time = 0
     this.scene.registerBeforeRender(() => {

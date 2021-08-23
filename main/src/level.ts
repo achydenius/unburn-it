@@ -30,6 +30,8 @@ export default abstract class Level {
     this.sounds = await loadAssets(this.config, this.assetsManager, this.scene)
   }
 
+  abstract init(): void
+
   protected getPositionalSounds(): Sound[] {
     if (!this.sounds) {
       throw Error('Sounds not defined!')

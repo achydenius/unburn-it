@@ -10,11 +10,14 @@ const inspectorRequested = (): boolean => {
   return pair !== undefined && pair[0] === 'inspector' && pair[1] === 'true'
 }
 
+let showIntro = true
 window.addEventListener('load', async () => {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement
   const engine = new Engine(canvas, true)
 
-  const introLevel = new IntroLevel(engine)
+  const introLevel = new IntroLevel(engine, () => {
+    showIntro = false
+  })
   const mainLevel = new MainLevel(engine)
 
   engine.loadingScreen.displayLoadingUI()
@@ -22,10 +25,7 @@ window.addEventListener('load', async () => {
   await introLevel.loadAssets()
   await mainLevel.loadAssets()
 
-  let showIntro = true
-  introLevel.init(() => {
-    showIntro = false
-  })
+  introLevel.init()
   mainLevel.init()
 
   engine.loadingScreen.hideLoadingUI()
