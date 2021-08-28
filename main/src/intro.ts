@@ -43,6 +43,7 @@ const config = {
     click4,
     click5,
   },
+  textures: {},
 }
 
 export default class IntroLevel extends Level {
