@@ -4,12 +4,12 @@ import {
   RefractionPostProcess,
   Vector3,
 } from '@babylonjs/core'
-import mainScene from './assets/MAINLEVEL_COMPRESSEDTEXTURES.10.8.2021.glb'
-import unburn1 from './assets/V1_UNBURN_13.08.21.mp3'
-import unburn2 from './assets/V2_UNBURN_13.08.21.mp3'
-import unburn3 from './assets/V3_UNBURN_13.08.21.mp3'
-import unburn4 from './assets/V4_UNBURN_13.08.21.mp3'
-import displacement from './assets/displacement-blur.jpg'
+import mainScene from './assets/main/MAINLEVEL_COMPRESSEDTEXTURES.10.8.2021.glb'
+import unburn1 from './assets/main/V1_UNBURN_13.08.21.mp3'
+import unburn2 from './assets/main/V2_UNBURN_13.08.21.mp3'
+import unburn3 from './assets/main/V3_UNBURN_13.08.21.mp3'
+import unburn4 from './assets/main/V4_UNBURN_13.08.21.mp3'
+import displacement from './assets/main/displacement-blur.jpg'
 import createCamera from './camera'
 import Level from './level'
 
