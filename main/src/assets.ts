@@ -4,38 +4,50 @@ export type AssetConfig = {
   name: string
   scene: string
   sounds: { [name: string]: string }
-}
-
-const matchExtension = /\.[0-9a-z]+$/i
-
-const isSoundFile = (src: string): boolean => {
-  const matches = src.match(matchExtension)
-  return matches ? matches[0] === '.mp3' : false
+  textures: { [name: string]: string }
 }
 
 const isSound = (asset: Sound | void): asset is Sound => !!asset
 
-// TODO: Can some of this be simplified with onFinish or onTasksDoneObservable?
-const loadAsset = async (
+const loadMeshAsset = (
+  name: string,
+  src: string,
+  manager: AssetsManager
+): Promise<void> =>
+  new Promise((resolve, reject) => {
+    const task = manager.addMeshTask(name, '', '', src)
+    task.onSuccess = (): void => resolve()
+    task.onError = (_, message): void => reject(message)
+  })
+
+const loadSoundAsset = (
   name: string,
   src: string,
   scene: Scene,
   manager: AssetsManager
-): Promise<Sound | void> =>
+): Promise<Sound> =>
   new Promise((resolve, reject) => {
-    if (isSoundFile(src)) {
-      const task = manager.addBinaryFileTask(name, src)
-      task.onSuccess = ({ data }): void => {
-        const sound = new Sound(name, data, scene, () => {
-          resolve(sound)
-        })
-      }
-      task.onError = (_, message): void => reject(message)
-    } else {
-      const task = manager.addMeshTask(name, '', '', src)
-      task.onSuccess = (): void => resolve()
+    const task = manager.addBinaryFileTask(name, src)
+    task.onSuccess = ({ data }): void => {
+      const sound = new Sound(name, data, scene, () => {
+        resolve(sound)
+      })
       task.onError = (_, message): void => reject(message)
     }
+  })
+
+const loadTextureAsset = (
+  name: string,
+  src: string,
+  manager: AssetsManager
+): Promise<void> =>
+  new Promise((resolve, reject) => {
+    const task = manager.addTextureTask(name, src)
+    task.onSuccess = ({ texture }): void => {
+      texture.name = name
+      resolve()
+    }
+    task.onError = (_, message): void => reject(message)
   })
 
 // Load all assets and return sounds as these can't be accessed via scene
@@ -45,10 +57,14 @@ export async function loadAssets(
   scene: Scene
 ): Promise<Sound[]> {
   const sounds = Object.entries(config.sounds).map(([name, src]) =>
-    loadAsset(name, src, scene, manager)
+    loadSoundAsset(name, src, scene, manager)
   )
-  const mesh = loadAsset(config.name, config.scene, scene, manager)
+  const mesh = loadMeshAsset(config.name, config.scene, manager)
+  const textures = Object.entries(config.textures).map(([name, src]) =>
+    loadTextureAsset(name, src, manager)
+  )
   manager.load()
 
-  return (await Promise.all([...sounds, mesh])).filter(isSound)
+  const promises: Promise<Sound | void>[] = [...sounds, ...textures, mesh]
+  return (await Promise.all(promises)).filter(isSound)
 }

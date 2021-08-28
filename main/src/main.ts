@@ -1,15 +1,22 @@
-import { HemisphericLight, Vector3 } from '@babylonjs/core'
+import {
+  Color3,
+  HemisphericLight,
+  RefractionPostProcess,
+  Vector3,
+} from '@babylonjs/core'
 import mainScene from './assets/MAINLEVEL_COMPRESSEDTEXTURES.10.8.2021.glb'
 import unburn1 from './assets/V1_UNBURN_13.08.21.mp3'
 import unburn2 from './assets/V2_UNBURN_13.08.21.mp3'
 import unburn3 from './assets/V3_UNBURN_13.08.21.mp3'
 import unburn4 from './assets/V4_UNBURN_13.08.21.mp3'
+import displacement from './assets/displacement-blur.jpg'
 import createCamera from './camera'
 import Level from './level'
 
 const cameraStartY = 20.0
 const cameraEndY = -115.0
 const audioOffsetSeconds = -5.0
+const refractionDepth = 0.1
 
 const config = {
   name: 'main',
@@ -19,6 +26,9 @@ const config = {
     unburn2,
     unburn3,
     unburn4,
+  },
+  textures: {
+    displacement,
   },
 }
 
@@ -39,6 +49,16 @@ export default class MainLevel extends Level {
       this.scene.getEngine().getRenderingCanvas()!
     )
     new HemisphericLight('Light', new Vector3(0, 1.0, 0), this.scene)
+
+    new RefractionPostProcess(
+      'Refraction',
+      displacement,
+      new Color3(1.0, 1.0, 1.0),
+      refractionDepth,
+      0,
+      1.0,
+      camera
+    )
 
     const audioSeconds =
       this.getPositionalSounds()[0].getAudioBuffer()!.duration
