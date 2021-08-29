@@ -1,8 +1,9 @@
 import { Engine } from '@babylonjs/core'
 import '@babylonjs/loaders'
 import '@babylonjs/inspector'
-import IntroLevel from './intro'
-import MainLevel from './main'
+import IntroStage from './intro'
+import MainStage from './main'
+import { Stage } from './stage'
 
 const inspectorRequested = (): boolean => {
   const param = window.location.search.split('?')[1] as string | undefined
@@ -10,34 +11,35 @@ const inspectorRequested = (): boolean => {
   return pair !== undefined && pair[0] === 'inspector' && pair[1] === 'true'
 }
 
-let showIntro = true
+let stage: Stage
 window.addEventListener('load', async () => {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement
   const engine = new Engine(canvas, true)
 
-  const introLevel = new IntroLevel(engine, () => {
-    showIntro = false
+  const mainStage = new MainStage(engine)
+  const introStage = new IntroStage(engine, () => {
+    stage = mainStage
+
+    if (inspectorRequested()) {
+      introStage.scene.debugLayer.hide()
+      mainStage.scene.debugLayer.show()
+    }
   })
-  const mainLevel = new MainLevel(engine)
+  stage = introStage
 
   engine.loadingScreen.displayLoadingUI()
 
-  await introLevel.loadAssets()
-  await mainLevel.loadAssets()
-
-  introLevel.init()
-  mainLevel.init()
+  await introStage.loadAndInit()
+  await mainStage.loadAndInit()
 
   engine.loadingScreen.hideLoadingUI()
 
   if (inspectorRequested()) {
-    introLevel.scene.debugLayer.show()
-    mainLevel.scene.debugLayer.show()
+    introStage.scene.debugLayer.show()
   }
 
   engine.runRenderLoop(() => {
-    const level = showIntro ? introLevel : mainLevel
-    level.scene.render()
+    stage.render()
   })
 
   window.addEventListener('resize', () => {
