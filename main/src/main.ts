@@ -1,5 +1,7 @@
 import {
+  ArcRotateCamera,
   Color3,
+  Engine,
   HemisphericLight,
   RefractionPostProcess,
   Sound,
@@ -7,7 +9,7 @@ import {
 } from '@babylonjs/core'
 
 import createCamera from './camera'
-import { Stage } from './stage'
+import { createSceneContainer, SceneContainer, Stage } from './stage'
 import { loadAssets } from './assets'
 
 import mainScene from './assets/main/MAINLEVEL_COMPRESSEDTEXTURES.10.8.2021.glb'
@@ -41,6 +43,20 @@ const refractionDepth = 0.1
 const config = {
   scenes: {
     mainScene,
+  },
+  sounds: {
+    unburn1,
+    unburn2,
+    unburn3,
+    unburn4,
+  },
+  textures: {
+    displacement,
+  },
+}
+
+const lyricsConfig = {
+  scenes: {
     lyrics1,
     lyrics2,
     lyrics3,
@@ -58,15 +74,23 @@ const config = {
     lyrics15,
     lyrics16,
   },
-  sounds: {
-    unburn1,
-    unburn2,
-    unburn3,
-    unburn4,
-  },
+  sounds: {},
   textures: {
     displacement,
   },
+}
+
+const createLyricsScene = ({ scene }: SceneContainer): void => {
+  new ArcRotateCamera(
+    'LyricsCamera',
+    -Math.PI / 2,
+    -Math.PI,
+    4.0,
+    new Vector3(0, 0, 0),
+    scene
+  )
+
+  new HemisphericLight('LyricsLight', new Vector3(0, 1.0, 0), scene)
 }
 
 export default class MainStage extends Stage {
@@ -74,14 +98,26 @@ export default class MainStage extends Stage {
 
   positionalSoundNames = ['unburn1', 'unburn2', 'unburn3', 'unburn4']
 
-  async loadAssets(): Promise<Sound[]> {
-    return loadAssets(this.config, this.manager, this.scene)
+  lyrics: SceneContainer
+
+  constructor(engine: Engine) {
+    super(engine)
+    this.lyrics = createSceneContainer(engine)
+    this.lyrics.scene.autoClear = false
   }
 
-  async initialize(
-    allSounds: Sound[],
-    positionalSounds: Sound[]
-  ): Promise<void> {
+  async loadAssets(): Promise<Sound[]> {
+    return Promise.all([
+      ...(await loadAssets(this.config, this.manager, this.scene)),
+      ...(await loadAssets(
+        lyricsConfig,
+        this.lyrics.manager,
+        this.lyrics.scene
+      )),
+    ])
+  }
+
+  async initialize(_: Sound[], positionalSounds: Sound[]): Promise<void> {
     const radius = 1.0
 
     const camera = createCamera(
@@ -103,6 +139,8 @@ export default class MainStage extends Stage {
       1.0,
       camera
     )
+
+    createLyricsScene(this.lyrics)
 
     const buffer = positionalSounds[0].getAudioBuffer()
     if (!buffer) {
@@ -126,5 +164,6 @@ export default class MainStage extends Stage {
 
   render(): void {
     this.scene.render()
+    this.lyrics.scene.render()
   }
 }

@@ -25,6 +25,8 @@ export abstract class Stage {
 
   abstract readonly positionalSoundNames: string[]
 
+  readonly engine: Engine
+
   readonly scene: Scene
 
   readonly manager: AssetsManager
@@ -33,6 +35,7 @@ export abstract class Stage {
 
   constructor(engine: Engine) {
     const { scene, manager } = createSceneContainer(engine)
+    this.engine = engine
     this.scene = scene
     this.manager = manager
 

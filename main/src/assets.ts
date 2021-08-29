@@ -1,8 +1,7 @@
 import { AssetsManager, Scene, Sound } from '@babylonjs/core'
 
 export type AssetConfig = {
-  name: string
-  scene: string
+  scenes: { [name: string]: string }
   sounds: { [name: string]: string }
   textures: { [name: string]: string }
 }
@@ -59,12 +58,14 @@ export async function loadAssets(
   const sounds = Object.entries(config.sounds).map(([name, src]) =>
     loadSoundAsset(name, src, scene, manager)
   )
-  const mesh = loadMeshAsset(config.name, config.scene, manager)
+  const meshes = Object.entries(config.scenes).map(([name, src]) =>
+    loadMeshAsset(name, src, manager)
+  )
   const textures = Object.entries(config.textures).map(([name, src]) =>
     loadTextureAsset(name, src, manager)
   )
   manager.load()
 
-  const promises: Promise<Sound | void>[] = [...sounds, ...textures, mesh]
+  const promises: Promise<Sound | void>[] = [...sounds, ...textures, ...meshes]
   return (await Promise.all(promises)).filter(isSound)
 }
