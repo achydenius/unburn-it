@@ -52,6 +52,15 @@ export abstract class Stage {
       this.positionalSoundNames.includes(name)
     )
     this.initialize(sounds, positionalSounds)
+
+    // Start playing background sounds when the first frame is rendered
+    this.scene.registerBeforeRender(() => {
+      if (!positionalSounds[0].isPlaying) {
+        positionalSounds.forEach((sound) => {
+          sound.play()
+        })
+      }
+    })
   }
 
   abstract render(): void
