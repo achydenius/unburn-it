@@ -15,7 +15,12 @@ const loadMeshAsset = (
 ): Promise<void> =>
   new Promise((resolve, reject) => {
     const task = manager.addMeshTask(name, '', '', src)
-    task.onSuccess = (): void => resolve()
+    task.onSuccess = ({ loadedMeshes }): void => {
+      if (!loadedMeshes[0].parent) {
+        loadedMeshes[0].name = name
+      }
+      resolve()
+    }
     task.onError = (_, message): void => reject(message)
   })
 
@@ -31,8 +36,8 @@ const loadSoundAsset = (
       const sound = new Sound(name, data, scene, () => {
         resolve(sound)
       })
-      task.onError = (_, message): void => reject(message)
     }
+    task.onError = (_, message): void => reject(message)
   })
 
 const loadTextureAsset = (

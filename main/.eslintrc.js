@@ -17,5 +17,6 @@ module.exports = {
     'no-param-reassign': 1,
     '@typescript-eslint/no-non-null-assertion': 1,
     'no-unused-vars': 0,
+    'no-plusplus': 0,
   },
 }
