@@ -1,17 +1,24 @@
 import {
+  Axis,
   Color3,
   HemisphericLight,
   RefractionPostProcess,
+  Sound,
+  Space,
   Vector3,
 } from '@babylonjs/core'
-import mainScene from './assets/MAINLEVEL_COMPRESSEDTEXTURES.10.8.2021.glb'
-import unburn1 from './assets/V1_UNBURN_13.08.21.mp3'
-import unburn2 from './assets/V2_UNBURN_13.08.21.mp3'
-import unburn3 from './assets/V3_UNBURN_13.08.21.mp3'
-import unburn4 from './assets/V4_UNBURN_13.08.21.mp3'
-import displacement from './assets/displacement-blur.jpg'
+
 import createCamera from './camera'
-import Level from './level'
+import { Stage } from './stage'
+import { loadAssets } from './assets'
+
+import mainScene from './assets/main/MAINLEVEL_COMPRESSEDTEXTURES.10.8.2021.glb'
+import unburn1 from './assets/main/V1_UNBURN_13.08.21.mp3'
+import unburn2 from './assets/main/V2_UNBURN_13.08.21.mp3'
+import unburn3 from './assets/main/V3_UNBURN_13.08.21.mp3'
+import unburn4 from './assets/main/V4_UNBURN_13.08.21.mp3'
+import displacement from './assets/main/displacement-blur.jpg'
+import { lyricsMeshes, initLyrics, handleLyricsVisibility } from './lyrics'
 
 const cameraStartY = 20.0
 const cameraEndY = -115.0
@@ -19,8 +26,10 @@ const audioOffsetSeconds = -5.0
 const refractionDepth = 0.1
 
 const config = {
-  name: 'main',
-  scene: mainScene,
+  scenes: {
+    mainScene,
+    ...lyricsMeshes,
+  },
   sounds: {
     unburn1,
     unburn2,
@@ -32,21 +41,35 @@ const config = {
   },
 }
 
-export default class MainLevel extends Level {
+const getCameraSpeed = (music: Sound): number => {
+  const buffer = music.getAudioBuffer()
+  if (!buffer) {
+    throw Error('Audio buffer not defined!')
+  }
+  const audioSeconds = buffer.duration
+  const cameraDistance = cameraEndY - cameraStartY
+  return cameraDistance / (audioSeconds + audioOffsetSeconds) / 60.0
+}
+
+export default class MainStage extends Stage {
   config = config
 
   positionalSoundNames = ['unburn1', 'unburn2', 'unburn3', 'unburn4']
 
-  init(): void {
+  async loadAssets(): Promise<Sound[]> {
+    return loadAssets(this.config, this.manager, this.scene)
+  }
+
+  async initialize(_: Sound[], positionalSounds: Sound[]): Promise<void> {
     const radius = 1.0
 
     const camera = createCamera(
       radius,
       new Vector3(0, cameraStartY, 0),
       Math.PI / 2,
-      this.getPositionalSounds(),
+      positionalSounds,
       this.scene,
-      this.scene.getEngine().getRenderingCanvas()!
+      this.canvas
     )
     new HemisphericLight('Light', new Vector3(0, 1.0, 0), this.scene)
 
@@ -60,20 +83,30 @@ export default class MainLevel extends Level {
       camera
     )
 
-    const audioSeconds =
-      this.getPositionalSounds()[0].getAudioBuffer()!.duration
-    const cameraDistance = cameraEndY - cameraStartY
-    const cameraSpeed =
-      cameraDistance / (audioSeconds + audioOffsetSeconds) / 60.0
+    const lyrics = initLyrics(this.scene)
 
+    const cameraSpeed = getCameraSpeed(positionalSounds[0])
     let yPosition = cameraStartY
     this.scene.registerBeforeRender(() => {
+      const { currentTime } = positionalSounds[0]
+      handleLyricsVisibility(lyrics, currentTime, yPosition, camera.alpha)
+
       camera.target.y = yPosition
       camera.radius = radius
 
       if (yPosition > cameraEndY) {
         yPosition += this.scene.getAnimationRatio() * cameraSpeed
+      } else {
+        lyrics[lyrics.length - 1].node.translate(
+          Axis.Y,
+          -(this.scene.getAnimationRatio() * cameraSpeed),
+          Space.WORLD
+        )
       }
     })
+  }
+
+  render(): void {
+    this.scene.render()
   }
 }

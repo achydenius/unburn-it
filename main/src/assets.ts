@@ -1,8 +1,7 @@
 import { AssetsManager, Scene, Sound } from '@babylonjs/core'
 
 export type AssetConfig = {
-  name: string
-  scene: string
+  scenes: { [name: string]: string }
   sounds: { [name: string]: string }
   textures: { [name: string]: string }
 }
@@ -16,7 +15,12 @@ const loadMeshAsset = (
 ): Promise<void> =>
   new Promise((resolve, reject) => {
     const task = manager.addMeshTask(name, '', '', src)
-    task.onSuccess = (): void => resolve()
+    task.onSuccess = ({ loadedMeshes }): void => {
+      if (!loadedMeshes[0].parent) {
+        loadedMeshes[0].name = name
+      }
+      resolve()
+    }
     task.onError = (_, message): void => reject(message)
   })
 
@@ -32,8 +36,8 @@ const loadSoundAsset = (
       const sound = new Sound(name, data, scene, () => {
         resolve(sound)
       })
-      task.onError = (_, message): void => reject(message)
     }
+    task.onError = (_, message): void => reject(message)
   })
 
 const loadTextureAsset = (
@@ -59,12 +63,14 @@ export async function loadAssets(
   const sounds = Object.entries(config.sounds).map(([name, src]) =>
     loadSoundAsset(name, src, scene, manager)
   )
-  const mesh = loadMeshAsset(config.name, config.scene, manager)
+  const meshes = Object.entries(config.scenes).map(([name, src]) =>
+    loadMeshAsset(name, src, manager)
+  )
   const textures = Object.entries(config.textures).map(([name, src]) =>
     loadTextureAsset(name, src, manager)
   )
   manager.load()
 
-  const promises: Promise<Sound | void>[] = [...sounds, ...textures, mesh]
+  const promises: Promise<Sound | void>[] = [...sounds, ...textures, ...meshes]
   return (await Promise.all(promises)).filter(isSound)
 }

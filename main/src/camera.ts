@@ -31,7 +31,6 @@ const initPositionalSounds = (sounds: Sound[]): void => {
   sounds.forEach((sound) => {
     sound.setVolume(0)
     sound.loop = true
-    sound.play()
   })
 }
 
@@ -75,6 +74,7 @@ const crossfadeSounds = (camera: ArcRotateCamera, sounds: Sound[]): void => {
   lastRotation = rotation
 }
 
+// TODO: Decouple camera and sounds?
 export default function createCamera(
   radius: number,
   target: Vector3,
