@@ -1,8 +1,10 @@
 import {
+  Axis,
   Color3,
   HemisphericLight,
   RefractionPostProcess,
   Sound,
+  Space,
   Vector3,
 } from '@babylonjs/core'
 
@@ -94,6 +96,12 @@ export default class MainStage extends Stage {
 
       if (yPosition > cameraEndY) {
         yPosition += this.scene.getAnimationRatio() * cameraSpeed
+      } else {
+        lyrics[lyrics.length - 1].node.translate(
+          Axis.Y,
+          -(this.scene.getAnimationRatio() * cameraSpeed),
+          Space.WORLD
+        )
       }
     })
   }
