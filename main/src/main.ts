@@ -16,7 +16,7 @@ import unburn2 from './assets/main/V2_UNBURN_13.08.21.mp3'
 import unburn3 from './assets/main/V3_UNBURN_13.08.21.mp3'
 import unburn4 from './assets/main/V4_UNBURN_13.08.21.mp3'
 import displacement from './assets/main/displacement-blur.jpg'
-import { lyricsMeshes, hideAllLyrics, handleLyricsVisibility } from './lyrics'
+import { lyricsMeshes, initLyrics, handleLyricsVisibility } from './lyrics'
 
 const cameraStartY = 20.0
 const cameraEndY = -115.0
@@ -81,13 +81,13 @@ export default class MainStage extends Stage {
       camera
     )
 
-    hideAllLyrics(this.scene)
+    const lyrics = initLyrics(this.scene)
 
     const cameraSpeed = getCameraSpeed(positionalSounds[0])
     let yPosition = cameraStartY
     this.scene.registerBeforeRender(() => {
       const { currentTime } = positionalSounds[0]
-      handleLyricsVisibility(this.scene, currentTime, yPosition, camera.alpha)
+      handleLyricsVisibility(lyrics, currentTime, yPosition, camera.alpha)
 
       camera.target.y = yPosition
       camera.radius = radius

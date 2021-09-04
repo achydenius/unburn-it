@@ -1,4 +1,4 @@
-import { AbstractMesh, Axis, Scene, Space } from '@babylonjs/core'
+import { Axis, Mesh, Node, Scene, Space, TransformNode } from '@babylonjs/core'
 import burnIt from './assets/main/01_BURN_IT.glb'
 import tInrubnu from './assets/main/02_TINRUBNU.glb'
 import drawkcab from './assets/main/03_DRAWKCAB.glb'
@@ -16,20 +16,56 @@ import thatRingOfFire from './assets/main/14_THAT_RING_OF_FIRE.glb'
 import ohohIm from './assets/main/15_OHOH_IM.glb'
 import burning from './assets/main/16_BURNING.glb'
 
-const lyricsYOffset = 1.5
+const lyricsYOffset = 1.25
 
-const lyricsTimeToSeconds = (time: string): number => {
-  const parts = time.split(':')
-  return (
-    parseInt(parts[0], 10) * 60 +
-    parseInt(parts[1], 10) +
-    parseInt(parts[2], 10) / 1000
-  )
+type LyricsConfig = {
+  start: string
+  name: string
 }
 
-type LyricsConfig = { start: string; name: string }
+type LyricsState = {
+  start: number
+  offset: number
+  node: TransformNode
+}
 
-type LyricsState = { start: number; name: string; isVisible: boolean }
+export const lyricsMeshes = {
+  burnIt,
+  tInrubnu,
+  drawkcab,
+  ashToAsh,
+  dustToTrash,
+  burnItBackward,
+  backward,
+  unburnIt,
+  worldsAlmostCooked,
+  itsOnFire,
+  myWorldsOnFire,
+  howBoutYours,
+  iveGotABadDesire,
+  thatRingOfFire,
+  ohohIm,
+  burning,
+}
+
+const lyricsOffsets: Record<string, number> = {
+  burnIt: 0.37,
+  tInrubnu: 0.76,
+  drawkcab: 0.23,
+  ashToAsh: 0.71,
+  dustToTrash: 0.08,
+  burnItBackward: 0.67,
+  backward: 0.38,
+  unburnIt: 0.38,
+  worldsAlmostCooked: 1.36,
+  itsOnFire: 1.29,
+  myWorldsOnFire: 1.4,
+  howBoutYours: 1.4,
+  iveGotABadDesire: 1.26,
+  thatRingOfFire: 1.13,
+  ohohIm: 1.3,
+  burning: 1.16,
+}
 
 const lyricsConfigs: LyricsConfig[] = [
   { start: '0:13:880', name: 'burnIt' },
@@ -67,69 +103,72 @@ const lyricsConfigs: LyricsConfig[] = [
   { start: '2:58:000', name: 'unburnIt' },
 ]
 
-const lyricsStates: LyricsState[] = lyricsConfigs.map(({ start, name }) => ({
-  start: lyricsTimeToSeconds(start),
-  name,
-  isVisible: false,
-}))
-
-const getMesh = (name: string, scene: Scene): AbstractMesh => {
-  const mesh = scene.getMeshByName(name)
-  if (!mesh) {
-    throw Error(`Mesh ${name} not found!`)
-  }
-  return mesh
-}
-
-export const lyricsMeshes = {
-  burnIt,
-  tInrubnu,
-  drawkcab,
-  ashToAsh,
-  dustToTrash,
-  burnItBackward,
-  backward,
-  unburnIt,
-  worldsAlmostCooked,
-  itsOnFire,
-  myWorldsOnFire,
-  howBoutYours,
-  iveGotABadDesire,
-  thatRingOfFire,
-  ohohIm,
-  burning,
-}
-
-export const hideAllLyrics = (scene: Scene): void => {
-  lyricsConfigs.forEach(({ name }) =>
-    scene.getMeshByName(name)?.setEnabled(false)
+const lyricsTimeToSeconds = (time: string): number => {
+  const parts = time.split(':')
+  return (
+    parseInt(parts[0], 10) * 60 +
+    parseInt(parts[1], 10) +
+    parseInt(parts[2], 10) / 1000
   )
 }
 
+const getNode = (name: string, scene: Scene): Node => {
+  const node = scene.getNodeByName(name)
+  if (!node) {
+    throw Error(`Node ${name} not found!`)
+  }
+  return node
+}
+
+const cloneLyric = (node: Node): TransformNode => {
+  const nodeClone = (node as TransformNode).clone(
+    `${node.name}-transform`,
+    null
+  )
+  const meshInstance = (node.getChildMeshes()[0] as Mesh).createInstance(
+    `${node.name}-instanace`
+  )
+  meshInstance.setParent(nodeClone)
+
+  if (!nodeClone) {
+    throw Error(`Error cloning node ${node.name}!`)
+  }
+
+  return nodeClone
+}
+
+export const initLyrics = (scene: Scene): LyricsState[] => {
+  lyricsConfigs.forEach(({ name }) => getNode(name, scene).setEnabled(false))
+
+  const lyrics = lyricsConfigs.map(({ start, name }) => ({
+    start: lyricsTimeToSeconds(start),
+    offset: lyricsOffsets[name],
+    node: cloneLyric(getNode(name, scene)),
+  }))
+
+  return lyrics
+}
+
 export const handleLyricsVisibility = (
-  scene: Scene,
+  lyrics: LyricsState[],
   time: number,
   cameraY: number,
   cameraAlpha: number
 ): void => {
-  let state: LyricsState | undefined
-  for (let i = 0; i < lyricsStates.length; i++) {
-    const { start, isVisible } = lyricsStates[i]
-    if (time >= start && !isVisible) {
-      state = lyricsStates[i]
-      break
-    }
-  }
+  const state = lyrics.find(
+    ({ start, node }) => time >= start && !node.isEnabled()
+  )
 
   if (state) {
-    const mesh = getMesh(state.name, scene)
+    const { node, offset } = state
 
     // Rotate lyrics locally to correct position and translate and rotate to front of camera
-    mesh.rotate(Axis.Y, -cameraAlpha - Math.PI / 2, Space.WORLD)
-    mesh.translate(Axis.Z, 1.0).translate(Axis.Y, cameraY - lyricsYOffset)
-    mesh.rotate(Axis.X, Math.PI / 2).rotate(Axis.Y, Math.PI)
+    node.rotate(Axis.Y, -cameraAlpha - Math.PI / 2, Space.WORLD)
+    node
+      .translate(Axis.Z, 1.0)
+      .translate(Axis.Y, cameraY - lyricsYOffset - offset)
+    node.rotate(Axis.X, -Math.PI / 2)
 
-    mesh.setEnabled(true)
-    state.isVisible = true
+    node.setEnabled(true)
   }
 }
