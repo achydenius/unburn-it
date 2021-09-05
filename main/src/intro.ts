@@ -20,7 +20,7 @@ import EnvironmentCamera from './camera'
 import createWaterMaterial from './water'
 import { loadAssets } from './assets'
 
-import introScene from '../assets/intro/SCENE_1.COMPRESSED_TEXTURES.10.8.2021.glb'
+import introScene from '../assets/intro/SCENE_1_FINAL_EXPORT.glb'
 import hover from '../assets/intro/PLAY_HOVER.mp3'
 import click1 from '../assets/intro/PLAY_CLICK1.mp3'
 import click2 from '../assets/intro/PLAY_CLICK2.mp3'

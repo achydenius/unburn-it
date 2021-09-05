@@ -11,7 +11,7 @@ import EnvironmentCamera from './camera'
 import { Stage } from './stage'
 import { loadAssets } from './assets'
 
-import mainScene from '../assets/main/MAINLEVEL_COMPRESSEDTEXTURES.10.8.2021.glb'
+import mainScene from '../assets/main/MAINLEVEL_FINAL_EXPORT.glb'
 import unburn1 from '../assets/main/V1_UNBURN_02.09.21.mp3'
 import unburn2 from '../assets/main/V2_UNBURN_02.09.21.mp3'
 import unburn3 from '../assets/main/V3_UNBURN_02.09.21.mp3'
