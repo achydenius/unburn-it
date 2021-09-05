@@ -1,9 +1,9 @@
 import { AssetsManager, Scene, Sound } from '@babylonjs/core'
 
 export type AssetConfig = {
-  scenes: { [name: string]: string }
-  sounds: { [name: string]: string }
-  textures: { [name: string]: string }
+  scenes: Record<string, string>
+  sounds: Record<string, string>
+  textures: Record<string, string>
 }
 
 const isSound = (asset: Sound | void): asset is Sound => !!asset

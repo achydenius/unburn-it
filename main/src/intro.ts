@@ -17,21 +17,21 @@ import {
 } from '@babylonjs/core'
 
 import { Stage } from './stage'
-import createCamera from './camera'
+import EnvironmentCamera from './camera'
 import createWaterMaterial from './water'
 import { loadAssets } from './assets'
 
-import introScene from './assets/intro/SCENE_1.COMPRESSED_TEXTURES.10.8.2021.glb'
-import center from './assets/intro/1(CENTER)_ENTRY_26.07.21.mp3'
-import left from './assets/intro/2(LEFT)_ENTRY_26.07.21.mp3'
-import right from './assets/intro/3(RIGHT)_ENTRY_26.07.21.mp3'
-import back from './assets/intro/4(BACK)_ENTRY_26.07.21.mp3'
-import hover from './assets/intro/PLAY_HOVER.mp3'
-import click1 from './assets/intro/PLAY_CLICK1.mp3'
-import click2 from './assets/intro/PLAY_CLICK2.mp3'
-import click3 from './assets/intro/PLAY_CLICK3.mp3'
-import click4 from './assets/intro/PLAY_CLICK4.mp3'
-import click5 from './assets/intro/PLAY_CLICK5.mp3'
+import introScene from '../assets/intro/SCENE_1.COMPRESSED_TEXTURES.10.8.2021.glb'
+import center from '../assets/intro/1(CENTER)_ENTRY_26.07.21.mp3'
+import left from '../assets/intro/2(LEFT)_ENTRY_26.07.21.mp3'
+import right from '../assets/intro/3(RIGHT)_ENTRY_26.07.21.mp3'
+import back from '../assets/intro/4(BACK)_ENTRY_26.07.21.mp3'
+import hover from '../assets/intro/PLAY_HOVER.mp3'
+import click1 from '../assets/intro/PLAY_CLICK1.mp3'
+import click2 from '../assets/intro/PLAY_CLICK2.mp3'
+import click3 from '../assets/intro/PLAY_CLICK3.mp3'
+import click4 from '../assets/intro/PLAY_CLICK4.mp3'
+import click5 from '../assets/intro/PLAY_CLICK5.mp3'
 
 const config = {
   scenes: {
@@ -169,7 +169,7 @@ export default class IntroStage extends Stage {
     allSounds: Sound[],
     positionalSounds: Sound[]
   ): Promise<void> {
-    createCamera(
+    const camera = new EnvironmentCamera(
       20.0,
       new Vector3(0, 0, 0),
       Math.PI / 2.5,
@@ -177,6 +177,10 @@ export default class IntroStage extends Stage {
       this.scene,
       this.canvas
     )
+    camera.applyPositionalSounds((sound: Sound) => {
+      sound.loop = true
+    })
+
     new HemisphericLight('Light', new Vector3(0, 1.0, 0), this.scene)
     const waterMaterial = createWater(this.scene)
 

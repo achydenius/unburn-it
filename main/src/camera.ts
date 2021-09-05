@@ -27,13 +27,6 @@ const getVolume = (phase: number, rampLength: number): number => {
   return 0
 }
 
-const initPositionalSounds = (sounds: Sound[]): void => {
-  sounds.forEach((sound) => {
-    sound.setVolume(0)
-    sound.loop = true
-  })
-}
-
 const limitCameraBeta = (
   camera: ArcRotateCamera,
   initialCameraBeta: number
@@ -54,55 +47,73 @@ const limitCameraBeta = (
 }
 
 let lastRotation = -1
-const crossfadeSounds = (camera: ArcRotateCamera, sounds: Sound[]): void => {
+let lastMasterVolume = -1
+const crossfadeSounds = (
+  camera: ArcRotateCamera,
+  sounds: Sound[],
+  masterVolume: number
+): void => {
   // Crossfade between sounds
   // TODO: Add a limit to update frequency in order to avoid distortion/cracking
   // TODO: Use positional sound instead?
   const soundRotationOffset = Math.PI / 2
   const rotation = mapRotation(camera.alpha + soundRotationOffset)
-  if (rotation !== lastRotation) {
+  if (rotation !== lastRotation || masterVolume !== lastMasterVolume) {
     const volumes = [
-      getVolume(rotation, 0.25),
-      getVolume((rotation + 0.75) % 1.0, 0.25),
-      getVolume((rotation + 0.5) % 1.0, 0.25),
-      getVolume((rotation + 0.25) % 1.0, 0.25),
+      getVolume(rotation, 0.25) * masterVolume,
+      getVolume((rotation + 0.75) % 1.0, 0.25) * masterVolume,
+      getVolume((rotation + 0.5) % 1.0, 0.25) * masterVolume,
+      getVolume((rotation + 0.25) % 1.0, 0.25) * masterVolume,
     ]
     sounds.forEach((sound, i) => {
       sound.setVolume(volumes[i])
     })
   }
   lastRotation = rotation
+  lastMasterVolume = masterVolume
 }
 
-// TODO: Decouple camera and sounds?
-export default function createCamera(
-  radius: number,
-  target: Vector3,
-  beta: number,
-  positionalSounds: Sound[],
-  scene: Scene,
-  canvas: HTMLCanvasElement
-): ArcRotateCamera {
-  const camera = new ArcRotateCamera(
-    'Camera',
-    -Math.PI / 2,
-    beta,
-    radius,
-    target,
-    scene
-  )
-  camera.attachControl(canvas, true)
-  camera.inputs.removeByType('ArcRotateCameraKeyboardMoveInput')
-  camera.inputs.removeByType('ArcRotateCameraMouseWheelInput')
+export default class EnvironmentCamera {
+  camera: ArcRotateCamera
 
-  const initialCameraBeta = camera.beta
+  positionalSounds: Sound[]
 
-  initPositionalSounds(positionalSounds)
+  masterVolume: number
 
-  scene.registerBeforeRender(() => {
-    limitCameraBeta(camera, initialCameraBeta)
-    crossfadeSounds(camera, positionalSounds)
-  })
+  constructor(
+    radius: number,
+    target: Vector3,
+    beta: number,
+    positionalSounds: Sound[],
+    scene: Scene,
+    canvas: HTMLCanvasElement
+  ) {
+    this.camera = new ArcRotateCamera(
+      'Camera',
+      -Math.PI / 2,
+      beta,
+      radius,
+      target,
+      scene
+    )
 
-  return camera
+    this.masterVolume = 1.0
+
+    this.positionalSounds = positionalSounds
+
+    this.camera.attachControl(canvas, true)
+    this.camera.inputs.removeByType('ArcRotateCameraKeyboardMoveInput')
+    this.camera.inputs.removeByType('ArcRotateCameraMouseWheelInput')
+
+    const initialCameraBeta = this.camera.beta
+
+    scene.registerBeforeRender(() => {
+      limitCameraBeta(this.camera, initialCameraBeta)
+      crossfadeSounds(this.camera, this.positionalSounds, this.masterVolume)
+    })
+  }
+
+  applyPositionalSounds(func: (sound: Sound) => void): void {
+    this.positionalSounds.forEach(func)
+  }
 }
