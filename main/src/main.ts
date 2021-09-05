@@ -1,7 +1,6 @@
 import {
   Axis,
   Color3,
-  HemisphericLight,
   RefractionPostProcess,
   Sound,
   Space,
@@ -81,8 +80,7 @@ export default class MainStage extends Stage {
       this.scene,
       this.canvas
     )
-
-    new HemisphericLight('Light', new Vector3(0, 1.0, 0), this.scene)
+    camera.light.intensity = 100.0
 
     new RefractionPostProcess(
       'Refraction',
@@ -111,6 +109,7 @@ export default class MainStage extends Stage {
 
       camera.camera.target.y = yPosition
       camera.camera.radius = radius
+      camera.updateLight()
 
       // Move camera until bottom of the scene
       if (yPosition > cameraEndY) {

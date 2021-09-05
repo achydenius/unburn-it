@@ -1,4 +1,11 @@
-import { ArcRotateCamera, Scene, Sound, Vector3 } from '@babylonjs/core'
+import {
+  ArcRotateCamera,
+  Scene,
+  Sound,
+  SpotLight,
+  TargetCamera,
+  Vector3,
+} from '@babylonjs/core'
 
 const maxBetaChange = 0.225
 
@@ -73,12 +80,17 @@ const crossfadeSounds = (
   lastMasterVolume = masterVolume
 }
 
+const getDirection = ({ target, position }: TargetCamera): Vector3 =>
+  Vector3.Normalize(target.subtract(position))
+
 export default class EnvironmentCamera {
   camera: ArcRotateCamera
 
   positionalSounds: Sound[]
 
   masterVolume: number
+
+  light: SpotLight
 
   constructor(
     radius: number,
@@ -105,6 +117,15 @@ export default class EnvironmentCamera {
     this.camera.inputs.removeByType('ArcRotateCameraKeyboardMoveInput')
     this.camera.inputs.removeByType('ArcRotateCameraMouseWheelInput')
 
+    this.light = new SpotLight(
+      'Light',
+      this.camera.position,
+      getDirection(this.camera),
+      Math.PI / 3,
+      1,
+      scene
+    )
+
     const initialCameraBeta = this.camera.beta
 
     scene.registerBeforeRender(() => {
@@ -115,5 +136,10 @@ export default class EnvironmentCamera {
 
   applyPositionalSounds(func: (sound: Sound) => void): void {
     this.positionalSounds.forEach(func)
+  }
+
+  updateLight(): void {
+    this.light.position = this.camera.position
+    this.light.direction = getDirection(this.camera)
   }
 }

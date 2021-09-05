@@ -5,7 +5,6 @@ import {
   CombineAction,
   Engine,
   ExecuteCodeAction,
-  HemisphericLight,
   InterpolateValueAction,
   MeshBuilder,
   PlaySoundAction,
@@ -171,11 +170,11 @@ export default class IntroStage extends Stage {
       this.scene,
       this.canvas
     )
+    camera.light.intensity = 1000.0
     camera.applyPositionalSounds((sound: Sound) => {
       sound.loop = true
     })
 
-    new HemisphericLight('Light', new Vector3(0, 1.0, 0), this.scene)
     const waterMaterial = createWater(this.scene)
 
     initPlayButton(this.scene, allSounds, positionalSounds, this.onClick)
@@ -185,6 +184,7 @@ export default class IntroStage extends Stage {
       // Update water
       time += this.scene.getEngine().getDeltaTime() * 0.0005
       waterMaterial.setFloat('time', time)
+      camera.updateLight()
     })
   }
 
