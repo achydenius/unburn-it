@@ -22,26 +22,20 @@ import createWaterMaterial from './water'
 import { loadAssets } from './assets'
 
 import introScene from '../assets/intro/SCENE_1.COMPRESSED_TEXTURES.10.8.2021.glb'
-import center from '../assets/intro/1(CENTER)_ENTRY_26.07.21.mp3'
-import left from '../assets/intro/2(LEFT)_ENTRY_26.07.21.mp3'
-import right from '../assets/intro/3(RIGHT)_ENTRY_26.07.21.mp3'
-import back from '../assets/intro/4(BACK)_ENTRY_26.07.21.mp3'
 import hover from '../assets/intro/PLAY_HOVER.mp3'
 import click1 from '../assets/intro/PLAY_CLICK1.mp3'
 import click2 from '../assets/intro/PLAY_CLICK2.mp3'
 import click3 from '../assets/intro/PLAY_CLICK3.mp3'
 import click4 from '../assets/intro/PLAY_CLICK4.mp3'
 import click5 from '../assets/intro/PLAY_CLICK5.mp3'
+import ambientSounds from './common'
 
 const config = {
   scenes: {
     introScene,
   },
   sounds: {
-    center,
-    left,
-    right,
-    back,
+    ...ambientSounds,
     hover,
     click1,
     click2,
@@ -152,7 +146,7 @@ const initPlayButton = (
 export default class IntroStage extends Stage {
   config = config
 
-  positionalSoundNames = ['center', 'left', 'right', 'back']
+  positionalSoundNames = ['ambient1', 'ambient2', 'ambient3', 'ambient4']
 
   onClick: () => void
 

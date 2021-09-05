@@ -17,10 +17,7 @@ import unburn1 from '../assets/main/V1_UNBURN_02.09.21.mp3'
 import unburn2 from '../assets/main/V2_UNBURN_02.09.21.mp3'
 import unburn3 from '../assets/main/V3_UNBURN_02.09.21.mp3'
 import unburn4 from '../assets/main/V4_UNBURN_02.09.21.mp3'
-import end1 from '../assets/main/V1_END.mp3'
-import end2 from '../assets/main/V2_END.mp3'
-import end3 from '../assets/main/V3_END.mp3'
-import end4 from '../assets/main/V4_END.mp3'
+import ambientSounds from './common'
 import displacement from '../assets/main/displacement-blur.jpg'
 import { lyricsMeshes, initLyrics, handleLyricsVisibility } from './lyrics'
 
@@ -40,10 +37,7 @@ const config = {
     unburn2,
     unburn3,
     unburn4,
-    end1,
-    end2,
-    end3,
-    end4,
+    ...ambientSounds,
   },
   textures: {
     displacement,
@@ -76,7 +70,7 @@ export default class MainStage extends Stage {
     const radius = 1.0
 
     const endSounds = allSounds.filter(({ name }) =>
-      ['end1', 'end2', 'end3', 'end4'].includes(name)
+      ['ambient1', 'ambient2', 'ambient3', 'ambient4'].includes(name)
     )
 
     const camera = new EnvironmentCamera(
