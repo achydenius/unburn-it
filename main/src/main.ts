@@ -12,13 +12,14 @@ import { Stage } from './stage'
 import { loadAssets } from './assets'
 
 import mainScene from '../assets/main/MAINLEVEL_FINAL_EXPORT.glb'
+import lyricsScene from '../assets/main/LYRICS.glb'
 import unburn1 from '../assets/main/V1_UNBURN_02.09.21.mp3'
 import unburn2 from '../assets/main/V2_UNBURN_02.09.21.mp3'
 import unburn3 from '../assets/main/V3_UNBURN_02.09.21.mp3'
 import unburn4 from '../assets/main/V4_UNBURN_02.09.21.mp3'
 import ambientSounds from './common'
 import displacement from '../assets/main/displacement-blur.jpg'
-import { lyricsMeshes, initLyrics, handleLyricsVisibility } from './lyrics'
+import { initLyrics, handleLyricsVisibility } from './lyrics'
 
 const cameraStartY = 20.0
 const cameraEndY = -115.0
@@ -29,7 +30,7 @@ const endSoundsIncrement = 0.0001
 const config = {
   scenes: {
     mainScene,
-    ...lyricsMeshes,
+    lyricsScene,
   },
   sounds: {
     unburn1,
