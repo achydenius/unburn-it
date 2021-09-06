@@ -21,12 +21,12 @@ import createWaterMaterial from './water'
 import { loadAssets } from './assets'
 
 import introScene from '../assets/intro/SCENE_1_FINAL_EXPORT.glb'
-import hover from '../assets/intro/PLAY_HOVER.mp3'
-import click1 from '../assets/intro/PLAY_CLICK1.mp3'
-import click2 from '../assets/intro/PLAY_CLICK2.mp3'
-import click3 from '../assets/intro/PLAY_CLICK3.mp3'
-import click4 from '../assets/intro/PLAY_CLICK4.mp3'
-import click5 from '../assets/intro/PLAY_CLICK5.mp3'
+import hover from '../assets/intro/PLAY_HOVER-192.mp3'
+import click1 from '../assets/intro/PLAY_CLICK1-192.mp3'
+import click2 from '../assets/intro/PLAY_CLICK2-192.mp3'
+import click3 from '../assets/intro/PLAY_CLICK3-192.mp3'
+import click4 from '../assets/intro/PLAY_CLICK4-192.mp3'
+import click5 from '../assets/intro/PLAY_CLICK5-192.mp3'
 import ambientSounds from './common'
 
 const config = {
