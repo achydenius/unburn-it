@@ -25,6 +25,9 @@ window.addEventListener('load', async () => {
       mainStage.scene.debugLayer.show()
     }
   })
+  mainStage.scene.doNotHandleCursors = true
+  introStage.scene.doNotHandleCursors = true
+
   stage = introStage
 
   engine.loadingScreen.displayLoadingUI()

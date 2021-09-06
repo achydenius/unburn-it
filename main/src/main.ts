@@ -1,7 +1,12 @@
 import {
+  AbstractMesh,
+  ActionManager,
   Axis,
   Color3,
+  ExecuteCodeAction,
+  InterpolateValueAction,
   RefractionPostProcess,
+  Scene,
   Sound,
   Space,
   Vector3,
@@ -10,16 +15,15 @@ import {
 import EnvironmentCamera from './camera'
 import { Stage } from './stage'
 import { loadAssets } from './assets'
-
-import mainScene from '../assets/main/MAINLEVEL_FINAL_EXPORT.glb'
-import lyricsScene from '../assets/main/LYRICS.glb'
-import unburn1 from '../assets/main/V1_UNBURN_02.09.21-192.mp3'
-import unburn2 from '../assets/main/V2_UNBURN_02.09.21-192.mp3'
-import unburn3 from '../assets/main/V3_UNBURN_02.09.21-192.mp3'
-import unburn4 from '../assets/main/V4_UNBURN_02.09.21-192.mp3'
-import ambientSounds from './common'
 import displacement from '../assets/main/displacement-blur.jpg'
 import { initLyrics, handleLyricsVisibility } from './lyrics'
+import {
+  ambientSounds,
+  interactiveSounds,
+  lyricsScene,
+  mainScene,
+  mainSounds,
+} from './imports'
 
 const cameraStartY = 20.0
 const cameraEndY = -115.0
@@ -33,15 +37,138 @@ const config = {
     lyricsScene,
   },
   sounds: {
-    unburn1,
-    unburn2,
-    unburn3,
-    unburn4,
+    ...mainSounds,
     ...ambientSounds,
+    ...interactiveSounds,
   },
   textures: {
     displacement,
   },
+}
+
+const getMesh = (name: string, scene: Scene): AbstractMesh => {
+  const mesh = scene.getMeshByName(name)
+  if (!mesh) {
+    throw Error(`Mesh ${name} not found!`)
+  }
+  return mesh
+}
+
+const pickRandom = <T>(items: T[]): T =>
+  items[Math.floor(Math.random() * items.length)]
+
+const initInteraction = (
+  mesh: AbstractMesh,
+  sounds: Sound[],
+  scene: Scene
+): void => {
+  mesh.actionManager = new ActionManager(scene)
+  mesh.actionManager.registerAction(
+    new InterpolateValueAction(
+      ActionManager.OnPointerOverTrigger,
+      mesh.material,
+      'emissiveColor',
+      new Color3(1.0, 1.0, 1.0),
+      100
+    )
+  )
+  mesh.actionManager.registerAction(
+    new InterpolateValueAction(
+      ActionManager.OnPointerOutTrigger,
+      mesh.material,
+      'emissiveColor',
+      new Color3(0, 0, 0),
+      100
+    )
+  )
+  mesh.actionManager.registerAction(
+    new ExecuteCodeAction(ActionManager.OnPickTrigger, () => {
+      const sound = pickRandom(sounds)
+      sound.play()
+    })
+  )
+}
+
+const initInteractions = (scene: Scene, sounds: Sound[]): void => {
+  const fishes = [
+    'FISH_1',
+    'FISH_2',
+    'FISH_3',
+    'fishie_3.001',
+    'FISH_5',
+    'FISH_6',
+    'FISH_7',
+    'FISH_8',
+    'FISH_9',
+    'FISH_10',
+    'FISH_11',
+  ].map((name) => getMesh(name, scene))
+
+  const gans = [
+    'GAN_1',
+    'GAN_2',
+    'GAN_3',
+    'GAN_4',
+    'GAN_5',
+    'GAN_6',
+    'GAN_7',
+    'GAN_8',
+    'GAN_9',
+    'GAN_10',
+    'GAN_11',
+    'GAN_12',
+    'GAN_13',
+  ].map((name) => getMesh(name, scene))
+
+  const mines = [
+    'WATER_MINE_1',
+    'WATER_MINE_2',
+    'WATER_MINE_3',
+    'WATER_MINE_4',
+    'WATER_MINE_5',
+    'WATER_MINE_6',
+    'WATER_MINE_7',
+    'WATER_MINE_8',
+    'WATER_MINE_9',
+  ].map((name) => getMesh(name, scene))
+
+  const plastics = [
+    'PLASTIC_1',
+    'PLASTIC_2',
+    'PLASTIC_3',
+    'PLASTIC_4',
+    'PLASTIC_5',
+    'PLASTIC_6',
+    'PLASTIC_8',
+    'PLASTIC_9',
+    'PLASTIC_10',
+    'PLASTIC_11',
+    'PLASTIC_12',
+    'PLASTIC_13',
+    'PLASTIC_14',
+    'PLASTIC_15',
+    'PLASTIC_16',
+  ].map((name) => getMesh(name, scene))
+
+  const fishSounds = sounds.filter(({ name }) => name.startsWith('fish'))
+  fishes.forEach((fish) => {
+    initInteraction(fish, fishSounds, scene)
+  })
+
+  const ganSounds = sounds.filter(({ name }) => name.startsWith('gan'))
+  gans.forEach((gan) => {
+    initInteraction(gan, ganSounds, scene)
+  })
+
+  const mineSounds = sounds.filter(({ name }) => name.startsWith('mine'))
+  mines.forEach((mine) => {
+    initInteraction(mine, mineSounds, scene)
+  })
+
+  const plasticSounds = sounds.filter(({ name }) => name.startsWith('plastic'))
+  plastics.forEach((plastic) => {
+    initInteraction(plastic, plasticSounds, scene)
+  })
 }
 
 const getCameraSpeed = (music: Sound): number => {
@@ -94,6 +221,8 @@ export default class MainStage extends Stage {
     )
 
     const lyrics = initLyrics(this.scene)
+
+    initInteractions(this.scene, allSounds)
 
     const cameraSpeed = getCameraSpeed(positionalSounds[0])
     let yPosition = cameraStartY

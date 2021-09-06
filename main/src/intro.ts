@@ -19,15 +19,7 @@ import { Stage } from './stage'
 import EnvironmentCamera from './camera'
 import createWaterMaterial from './water'
 import { loadAssets } from './assets'
-
-import introScene from '../assets/intro/SCENE_1_FINAL_EXPORT.glb'
-import hover from '../assets/intro/PLAY_HOVER-192.mp3'
-import click1 from '../assets/intro/PLAY_CLICK1-192.mp3'
-import click2 from '../assets/intro/PLAY_CLICK2-192.mp3'
-import click3 from '../assets/intro/PLAY_CLICK3-192.mp3'
-import click4 from '../assets/intro/PLAY_CLICK4-192.mp3'
-import click5 from '../assets/intro/PLAY_CLICK5-192.mp3'
-import ambientSounds from './common'
+import { ambientSounds, clickSounds, hoverSound, introScene } from './imports'
 
 const config = {
   scenes: {
@@ -35,18 +27,14 @@ const config = {
   },
   sounds: {
     ...ambientSounds,
-    hover,
-    click1,
-    click2,
-    click3,
-    click4,
-    click5,
+    hoverSound,
+    ...clickSounds,
   },
   textures: {},
 }
 
 const getHoverSound = (sounds: Sound[]): Sound => {
-  const sound = sounds.find(({ name }) => name === 'hover')
+  const sound = sounds.find(({ name }) => name === 'hoverSound')
   if (sound) {
     return sound
   }
@@ -93,8 +81,8 @@ const initPlayButton = (
     throw Error('play_start_text mesh not found!')
   }
 
-  const hoverSound = getHoverSound(allSounds)
-  const clickSounds = getClickSounds(allSounds)
+  const hover = getHoverSound(allSounds)
+  const clicks = getClickSounds(allSounds)
 
   mesh.actionManager = new ActionManager(scene)
 
@@ -107,7 +95,7 @@ const initPlayButton = (
         new Color3(1.0, 1.0, 1.0),
         250
       ),
-      new PlaySoundAction(ActionManager.NothingTrigger, hoverSound),
+      new PlaySoundAction(ActionManager.NothingTrigger, hover),
     ])
   )
 
@@ -120,7 +108,7 @@ const initPlayButton = (
         new Color3(0, 0, 0),
         250
       ),
-      new StopSoundAction(ActionManager.NothingTrigger, hoverSound),
+      new StopSoundAction(ActionManager.NothingTrigger, hover),
     ])
   )
 
@@ -129,12 +117,12 @@ const initPlayButton = (
   mesh.actionManager.registerAction(
     new ExecuteCodeAction(ActionManager.OnPickTrigger, () => {
       if (clickIndex >= 0) {
-        clickSounds[clickIndex].stop()
+        clicks[clickIndex].stop()
       }
-      clickIndex = (clickIndex + 1) % clickSounds.length
-      clickSounds[clickIndex].play()
+      clickIndex = (clickIndex + 1) % clicks.length
+      clicks[clickIndex].play()
 
-      hoverSound.stop()
+      hover.stop()
       positionalSounds.forEach((sound) => sound.stop())
       manager.actions.forEach((action) => manager.unregisterAction(action))
       onClick()
