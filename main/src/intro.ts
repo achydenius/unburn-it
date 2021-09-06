@@ -1,17 +1,11 @@
 import {
   AbstractMesh,
   ActionManager,
-  Color3,
-  CombineAction,
   Engine,
-  ExecuteCodeAction,
-  InterpolateValueAction,
   MeshBuilder,
-  PlaySoundAction,
   Scene,
   ShaderMaterial,
   Sound,
-  StopSoundAction,
   Vector3,
 } from '@babylonjs/core'
 
@@ -20,6 +14,7 @@ import EnvironmentCamera from './camera'
 import createWaterMaterial from './water'
 import { loadAssets } from './assets'
 import { ambientSounds, clickSounds, hoverSound, introScene } from './imports'
+import { createButtonActions } from './common'
 
 const config = {
   scenes: {
@@ -32,17 +27,6 @@ const config = {
   },
   textures: {},
 }
-
-const getHoverSound = (sounds: Sound[]): Sound => {
-  const sound = sounds.find(({ name }) => name === 'hoverSound')
-  if (sound) {
-    return sound
-  }
-  throw Error('Hover sound not found!')
-}
-
-const getClickSounds = (sounds: Sound[]): Sound[] =>
-  sounds.filter(({ name }) => name.startsWith('click'))
 
 const getWaterPlane = (scene: Scene): AbstractMesh => {
   const plane = scene.getMeshByID('Plane')
@@ -71,7 +55,7 @@ const initPlayButton = (
   scene: Scene,
   allSounds: Sound[],
   positionalSounds: Sound[],
-  onClick: () => void
+  onClick: (manager: ActionManager) => void
 ): void => {
   const plane = getWaterPlane(scene)
   plane.isPickable = false
@@ -81,53 +65,7 @@ const initPlayButton = (
     throw Error('play_start_text mesh not found!')
   }
 
-  const hover = getHoverSound(allSounds)
-  const clicks = getClickSounds(allSounds)
-
-  mesh.actionManager = new ActionManager(scene)
-
-  mesh.actionManager.registerAction(
-    new CombineAction(ActionManager.OnPointerOverTrigger, [
-      new InterpolateValueAction(
-        ActionManager.NothingTrigger,
-        mesh.material,
-        'emissiveColor',
-        new Color3(1.0, 1.0, 1.0),
-        250
-      ),
-      new PlaySoundAction(ActionManager.NothingTrigger, hover),
-    ])
-  )
-
-  mesh.actionManager.registerAction(
-    new CombineAction(ActionManager.OnPointerOutTrigger, [
-      new InterpolateValueAction(
-        ActionManager.NothingTrigger,
-        mesh.material,
-        'emissiveColor',
-        new Color3(0, 0, 0),
-        250
-      ),
-      new StopSoundAction(ActionManager.NothingTrigger, hover),
-    ])
-  )
-
-  let clickIndex = 0
-  const manager = mesh.actionManager
-  mesh.actionManager.registerAction(
-    new ExecuteCodeAction(ActionManager.OnPickTrigger, () => {
-      if (clickIndex >= 0) {
-        clicks[clickIndex].stop()
-      }
-      clickIndex = (clickIndex + 1) % clicks.length
-      clicks[clickIndex].play()
-
-      hover.stop()
-      positionalSounds.forEach((sound) => sound.stop())
-      manager.actions.forEach((action) => manager.unregisterAction(action))
-      onClick()
-    })
-  )
+  createButtonActions(mesh, allSounds, positionalSounds, onClick)
 }
 
 export default class IntroStage extends Stage {
@@ -135,9 +73,9 @@ export default class IntroStage extends Stage {
 
   positionalSoundNames = ['ambient1', 'ambient2', 'ambient3', 'ambient4']
 
-  onClick: () => void
+  onClick: (manager: ActionManager) => void
 
-  constructor(engine: Engine, onClick: () => void) {
+  constructor(engine: Engine, onClick: (manager: ActionManager) => void) {
     super(engine)
     this.onClick = onClick
   }

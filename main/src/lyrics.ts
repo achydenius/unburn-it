@@ -100,7 +100,7 @@ const cloneLyric = (node: Node): InstancedMesh => {
   return instance
 }
 
-const resetLyrics = (
+export const resetLyrics = (
   lyrics: LyricsState[],
   startY: number,
   ratio: number
@@ -112,11 +112,11 @@ const resetLyrics = (
     lyric.aligned = false
   })
 }
-export function initLyrics(
+export const initLyrics = (
   startY: number,
   ratio: number,
   scene: Scene
-): LyricsState[] {
+): LyricsState[] => {
   lyricsConfigs.forEach(({ name }) => getNode(name, scene).setEnabled(false))
 
   const lyrics = lyricsConfigs.map(({ start, name }) => ({

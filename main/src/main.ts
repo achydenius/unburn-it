@@ -16,14 +16,17 @@ import EnvironmentCamera from './camera'
 import { Stage } from './stage'
 import { loadAssets } from './assets'
 import displacement from '../assets/main/displacement-blur.jpg'
-import { initLyrics, alignLyrics } from './lyrics'
+import { initLyrics, alignLyrics, resetLyrics } from './lyrics'
 import {
   ambientSounds,
+  clickSounds,
+  hoverSound,
   interactiveSounds,
   lyricsScene,
   mainScene,
   mainSounds,
 } from './imports'
+import { createButtonActions } from './common'
 
 const cameraStartY = 20.0
 const cameraEndY = -115.0
@@ -39,6 +42,8 @@ const config = {
     ...mainSounds,
     ...ambientSounds,
     ...interactiveSounds,
+    hoverSound,
+    ...clickSounds,
   },
   textures: {
     displacement,
@@ -170,6 +175,20 @@ const initInteractions = (scene: Scene, sounds: Sound[]): void => {
   })
 }
 
+const initReplayButton = (
+  scene: Scene,
+  allSounds: Sound[],
+  positionalSounds: Sound[],
+  onClick: () => void
+): void => {
+  const mesh = scene.getMeshByID('REPLAYBUTTON')
+  if (!mesh) {
+    throw Error('REPLAYBUTTON mesh not found!')
+  }
+
+  createButtonActions(mesh, allSounds, positionalSounds, onClick)
+}
+
 const getUnitsPerSecond = (sound: Sound): number => {
   const buffer = sound.getAudioBuffer()
   if (!buffer) {
@@ -221,12 +240,23 @@ export default class MainStage extends Stage {
 
     const lyrics = initLyrics(cameraStartY, unitsPerSecond, this.scene)
 
-    initInteractions(this.scene, allSounds)
-
-    const cameraSpeed = unitsPerSecond / 60.0
+    // TODO: Clean up all this restart-related ugliness
     let yPosition = cameraStartY
     let endSoundsVolume = 0
     let isEndSoundsPlaying = false
+
+    initInteractions(this.scene, allSounds)
+    initReplayButton(this.scene, allSounds, positionalSounds, () => {
+      yPosition = cameraStartY
+      endSoundsVolume = 0
+      isEndSoundsPlaying = false
+      positionalSounds.forEach((sound) => {
+        sound.play()
+      })
+      resetLyrics(lyrics, cameraStartY, unitsPerSecond)
+    })
+
+    const cameraSpeed = unitsPerSecond / 60.0
     this.scene.registerBeforeRender(() => {
       const { currentTime } = positionalSounds[0]
       alignLyrics(lyrics, currentTime, camera.camera.alpha)
