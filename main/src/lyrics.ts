@@ -6,10 +6,10 @@ import {
   Scene,
   Space,
   TransformNode,
+  Vector3,
 } from '@babylonjs/core'
 
-const lyricsYOffset = 1.25
-
+const lyricsYOffset = 1.5
 type LyricsConfig = {
   start: string
   name: string
@@ -19,6 +19,7 @@ type LyricsState = {
   start: number
   offset: number
   node: TransformNode
+  aligned: boolean
 }
 
 const lyricsOffsets: Record<string, number> = {
@@ -95,41 +96,55 @@ const getNode = (name: string, scene: Scene): Node => {
 
 const cloneLyric = (node: Node): InstancedMesh => {
   const instance = (node as Mesh).createInstance(`${node.name}-instance`)
-  instance.setEnabled(false)
+  instance.setEnabled(true)
   return instance
 }
 
-export const initLyrics = (scene: Scene): LyricsState[] => {
+const resetLyrics = (
+  lyrics: LyricsState[],
+  startY: number,
+  ratio: number
+): void => {
+  lyrics.forEach((lyric) => {
+    const offset = startY - lyric.start * ratio - lyricsYOffset - lyric.offset
+    lyric.node.position = new Vector3(0, offset, 0)
+    lyric.node.rotation = new Vector3(Math.PI / 2, 0, 0)
+    lyric.aligned = false
+  })
+}
+export function initLyrics(
+  startY: number,
+  ratio: number,
+  scene: Scene
+): LyricsState[] {
   lyricsConfigs.forEach(({ name }) => getNode(name, scene).setEnabled(false))
 
   const lyrics = lyricsConfigs.map(({ start, name }) => ({
     start: lyricsTimeToSeconds(start),
     offset: lyricsOffsets[name],
     node: cloneLyric(getNode(name, scene)),
+    aligned: false,
   }))
+
+  resetLyrics(lyrics, startY, ratio)
 
   return lyrics
 }
 
-export const handleLyricsVisibility = (
+export const alignLyrics = (
   lyrics: LyricsState[],
   time: number,
-  cameraY: number,
   cameraAlpha: number
 ): void => {
-  const state = lyrics.find(
-    ({ start, node }) => time >= start && !node.isEnabled()
-  )
+  const state = lyrics.find(({ start, aligned }) => time >= start && !aligned)
 
   if (state) {
-    const { node, offset } = state
+    const { node } = state
 
-    // Rotate lyrics locally to correct position and translate and rotate to front of camera
     node.rotate(Axis.Y, -cameraAlpha - Math.PI / 2, Space.WORLD)
-    node
-      .translate(Axis.Z, 1.0)
-      .translate(Axis.Y, cameraY - lyricsYOffset - offset)
-    node.rotate(Axis.X, Math.PI / 2)
+    node.translate(Axis.Y, 1.0)
+
+    state.aligned = true
 
     node.setEnabled(true)
   }

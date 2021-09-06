@@ -16,7 +16,7 @@ import EnvironmentCamera from './camera'
 import { Stage } from './stage'
 import { loadAssets } from './assets'
 import displacement from '../assets/main/displacement-blur.jpg'
-import { initLyrics, handleLyricsVisibility } from './lyrics'
+import { initLyrics, alignLyrics } from './lyrics'
 import {
   ambientSounds,
   interactiveSounds,
@@ -27,7 +27,6 @@ import {
 
 const cameraStartY = 20.0
 const cameraEndY = -115.0
-const audioOffsetSeconds = -5.0
 const refractionDepth = 0.1
 const endSoundsIncrement = 0.0001
 
@@ -171,14 +170,12 @@ const initInteractions = (scene: Scene, sounds: Sound[]): void => {
   })
 }
 
-const getCameraSpeed = (music: Sound): number => {
-  const buffer = music.getAudioBuffer()
+const getUnitsPerSecond = (sound: Sound): number => {
+  const buffer = sound.getAudioBuffer()
   if (!buffer) {
     throw Error('Audio buffer not defined!')
   }
-  const audioSeconds = buffer.duration
-  const cameraDistance = cameraEndY - cameraStartY
-  return cameraDistance / (audioSeconds + audioOffsetSeconds) / 60.0
+  return (cameraStartY - cameraEndY) / buffer.duration
 }
 
 export default class MainStage extends Stage {
@@ -220,22 +217,19 @@ export default class MainStage extends Stage {
       camera.camera
     )
 
-    const lyrics = initLyrics(this.scene)
+    const unitsPerSecond = getUnitsPerSecond(positionalSounds[0])
+
+    const lyrics = initLyrics(cameraStartY, unitsPerSecond, this.scene)
 
     initInteractions(this.scene, allSounds)
 
-    const cameraSpeed = getCameraSpeed(positionalSounds[0])
+    const cameraSpeed = unitsPerSecond / 60.0
     let yPosition = cameraStartY
     let endSoundsVolume = 0
     let isEndSoundsPlaying = false
     this.scene.registerBeforeRender(() => {
       const { currentTime } = positionalSounds[0]
-      handleLyricsVisibility(
-        lyrics,
-        currentTime,
-        yPosition,
-        camera.camera.alpha
-      )
+      alignLyrics(lyrics, currentTime, camera.camera.alpha)
 
       camera.camera.target.y = yPosition
       camera.camera.radius = radius
@@ -243,12 +237,12 @@ export default class MainStage extends Stage {
 
       // Move camera until bottom of the scene
       if (yPosition > cameraEndY) {
-        yPosition += this.scene.getAnimationRatio() * cameraSpeed
+        yPosition -= this.scene.getAnimationRatio() * cameraSpeed
         // At the bottom move the last lyrics up
       } else {
         lyrics[lyrics.length - 1].node.translate(
           Axis.Y,
-          -(this.scene.getAnimationRatio() * cameraSpeed),
+          this.scene.getAnimationRatio() * cameraSpeed,
           Space.WORLD
         )
 
