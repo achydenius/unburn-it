@@ -1,9 +1,7 @@
 import {
   AbstractMesh,
   ActionManager,
-  ArcRotateCamera,
   Color3,
-  DefaultRenderingPipeline,
   DirectionalLight,
   Engine,
   MeshBuilder,
