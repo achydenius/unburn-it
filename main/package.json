@@ -9,8 +9,8 @@
     "lint": "npm run eslint && npm run test-compile",
     "eslint": "eslint --ext .ts .",
     "test-compile": "tsc --noemit",
-    "deploy:dev": "npm run build && cd ../infrastructure && npm run deploy:dev -- assets=../main/dist",
-    "deploy:prod": "npm run build && cd ../infrastructure && npm run deploy:prod -- assets=../main/dist"
+    "deploy:dev": "rm -rf dist && npm run build && cd ../infrastructure && npm run deploy:dev -- assets=../main/dist",
+    "deploy:prod": "rm -rf dist && npm run build && cd ../infrastructure && npm run deploy:prod -- assets=../main/dist"
   },
   "author": "",
   "license": "ISC",

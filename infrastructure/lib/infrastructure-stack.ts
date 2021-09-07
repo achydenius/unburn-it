@@ -108,12 +108,12 @@ export default class InfrastructureStack extends cdk.Stack {
       zone: hostedZone,
     })
 
-    new s3Deployment.BucketDeployment(this, 'DeployWithInvalidation', {
+    new s3Deployment.BucketDeployment(this, 'DeployWithInvalidationUpdated', {
       sources: [s3Deployment.Source.asset(props.assetDirectory)],
       destinationBucket: bucket,
       distribution,
       distributionPaths: ['/*'],
-      memoryLimit: 512,
+      memoryLimit: 1024,
     })
   }
 }

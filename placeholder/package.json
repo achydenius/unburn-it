@@ -6,8 +6,8 @@
   "scripts": {
     "start": "webpack serve --mode development",
     "build": "webpack --mode production",
-    "deploy:dev": "npm run build && cd ../infrastructure && npm run deploy:dev -- assets=../placeholder/dist",
-    "deploy:prod": "npm run build && cd ../infrastructure && npm run deploy:prod -- assets=../placeholder/dist"
+    "deploy:dev": "rm -rf dist && npm run build && cd ../infrastructure && npm run deploy:dev -- assets=../placeholder/dist",
+    "deploy:prod": "rm -rf dist && npm run build && cd ../infrastructure && npm run deploy:prod -- assets=../placeholder/dist"
   },
   "author": "",
   "license": "ISC",
