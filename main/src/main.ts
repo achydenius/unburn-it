@@ -1,8 +1,10 @@
 import {
   AbstractMesh,
   ActionManager,
+  ArcRotateCamera,
   Axis,
   Color3,
+  DefaultRenderingPipeline,
   ExecuteCodeAction,
   InterpolateValueAction,
   RefractionPostProcess,
@@ -31,7 +33,11 @@ import { createButtonActions } from './common'
 const cameraStartY = 20.0
 const cameraEndY = -115.0
 const refractionDepth = 0.1
-const endSoundsIncrement = 0.0001
+const endSoundsIncrement = 0.001
+const lightIntensityStart = 250.0
+const lightIntensityEnd = 750.0
+const lightStartIncrementY = -90.0
+const lightIncrement = 1.0
 
 const config = {
   scenes: {
@@ -197,6 +203,33 @@ const getUnitsPerSecond = (sound: Sound): number => {
   return (cameraStartY - cameraEndY) / buffer.duration
 }
 
+const initPostProcess = (camera: ArcRotateCamera): void => {
+  new RefractionPostProcess(
+    'Refraction',
+    displacement,
+    new Color3(1.0, 1.0, 1.0),
+    refractionDepth,
+    0,
+    1.0,
+    camera
+  )
+
+  const pipeline = new DefaultRenderingPipeline(
+    'default',
+    true,
+    camera.getScene(),
+    [camera]
+  )
+  pipeline.bloomEnabled = true
+  pipeline.bloomThreshold = 0.9
+  pipeline.bloomWeight = 0.5
+  pipeline.fxaaEnabled = false
+  pipeline.bloomWeight = 0.5
+  pipeline.imageProcessingEnabled = true
+  pipeline.imageProcessing.contrast = 3.0
+  pipeline.imageProcessing.exposure = 0.5
+}
+
 export default class MainStage extends Stage {
   config = config
 
@@ -224,17 +257,13 @@ export default class MainStage extends Stage {
       this.scene,
       this.canvas
     )
-    camera.light.intensity = 100.0
+    camera.light.intensity = lightIntensityStart
+    camera.light.shadowEnabled = false
+    this.scene.fogMode = Scene.FOGMODE_EXP2
+    this.scene.fogDensity = 0.01
+    this.scene.fogColor = new Color3(0, 0, 0)
 
-    new RefractionPostProcess(
-      'Refraction',
-      displacement,
-      new Color3(1.0, 1.0, 1.0),
-      refractionDepth,
-      0,
-      1.0,
-      camera.camera
-    )
+    initPostProcess(camera.camera)
 
     const unitsPerSecond = getUnitsPerSecond(positionalSounds[0])
 
@@ -253,7 +282,11 @@ export default class MainStage extends Stage {
       positionalSounds.forEach((sound) => {
         sound.play()
       })
+      endSounds.forEach((sound) => {
+        sound.stop()
+      })
       resetLyrics(lyrics, cameraStartY, unitsPerSecond)
+      camera.light.intensity = lightIntensityStart
     })
 
     const cameraSpeed = unitsPerSecond / 60.0
@@ -264,6 +297,14 @@ export default class MainStage extends Stage {
       camera.camera.target.y = yPosition
       camera.camera.radius = radius
       camera.updateLight()
+
+      // Increase light intensity towards the end of the stage
+      if (yPosition <= lightStartIncrementY) {
+        const intensity = camera.light.intensity + lightIncrement
+        if (intensity < lightIntensityEnd) {
+          camera.light.intensity = intensity
+        }
+      }
 
       // Move camera until bottom of the scene
       if (yPosition > cameraEndY) {
