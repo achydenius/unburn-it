@@ -1,9 +1,25 @@
-import { ActionManager, Engine } from '@babylonjs/core'
+import { ActionManager, Engine, ILoadingScreen } from '@babylonjs/core'
 import '@babylonjs/loaders'
 import '@babylonjs/inspector'
 import IntroStage from './intro'
 import MainStage from './main'
 import { Stage } from './stage'
+
+class LoadingScreen implements ILoadingScreen {
+  loadingUIBackgroundColor = '#000'
+
+  loadingUIText = ''
+
+  /* eslint-disable */
+  displayLoadingUI(): void {
+    document.getElementById('loader')!.style.display = 'block'
+  }
+
+  hideLoadingUI() {
+    document.getElementById('loader')!.style.display = 'none'
+  }
+  /* eslint-enable */
+}
 
 const inspectorRequested = (): boolean => {
   const param = window.location.search.split('?')[1] as string | undefined
@@ -16,6 +32,8 @@ window.addEventListener('load', async () => {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement
   const engine = new Engine(canvas, true)
 
+  engine.loadingScreen = new LoadingScreen()
+
   const mainStage = new MainStage(engine)
   const introStage = new IntroStage(engine, (manager: ActionManager) => {
     stage = mainStage
@@ -27,6 +45,7 @@ window.addEventListener('load', async () => {
       mainStage.scene.debugLayer.show()
     }
   })
+
   mainStage.scene.doNotHandleCursors = true
   introStage.scene.doNotHandleCursors = true
 
