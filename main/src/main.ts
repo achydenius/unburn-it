@@ -217,8 +217,7 @@ const initPostProcess = (camera: ArcRotateCamera): void => {
   const pipeline = new DefaultRenderingPipeline(
     'default',
     true,
-    camera.getScene(),
-    [camera]
+    camera.getScene()
   )
   pipeline.bloomEnabled = true
   pipeline.bloomThreshold = 0.9

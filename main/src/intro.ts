@@ -1,6 +1,10 @@
 import {
   AbstractMesh,
   ActionManager,
+  ArcRotateCamera,
+  Color3,
+  DefaultRenderingPipeline,
+  DirectionalLight,
   Engine,
   MeshBuilder,
   Scene,
@@ -96,10 +100,23 @@ export default class IntroStage extends Stage {
       this.scene,
       this.canvas
     )
-    camera.light.intensity = 1000.0
+    camera.light.shadowEnabled = false
+    camera.light.intensity = 500.0
+    camera.light.angle = 90.0
     camera.applyPositionalSounds((sound: Sound) => {
       sound.loop = true
     })
+    const directionalLight = new DirectionalLight(
+      'DirectionalLight',
+      new Vector3(0, -1.0, 0),
+      this.scene
+    )
+    directionalLight.shadowEnabled = false
+    directionalLight.intensity = 3.0
+
+    this.scene.fogMode = Scene.FOGMODE_EXP2
+    this.scene.fogDensity = 0.001
+    this.scene.fogColor = new Color3(0, 0, 0)
 
     const waterMaterial = createWater(this.scene)
 
